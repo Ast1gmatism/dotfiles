@@ -42,6 +42,11 @@ PanelWindow {
         Loader {
             id: loader
             anchors.fill: parent
+            onLoaded: {
+                background.implicitWidth = loader.item.implicitWidth
+                background.implicitHeight = loader.item.implicitHeight
+                visible = true
+            }
         }
 
         Behavior on implicitHeight {
@@ -67,8 +72,6 @@ PanelWindow {
 
         currentComponent = component
         loader.sourceComponent = component
-        background.implicitWidth = loader.item.implicitWidth
-        background.implicitHeight = loader.item.implicitHeight
         background.x = marginH
         background.anchors.bottomMargin = marginV
         // background.anchors.bottom = undefined
@@ -81,7 +84,6 @@ PanelWindow {
         //     background.anchors.bottom = root.bottom
         //     background.anchors.bottomMargin = marginV
         // }
-        visible = true
     }
 }
 
