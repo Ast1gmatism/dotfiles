@@ -20,14 +20,18 @@ PanelWindow {
     
     property var currentComponent: null
 
+    property string hAlign: "left"
+    property string vAlign: "bottom"
+    property real offsetX: 0
+    property real offsetY: 0
+
     Rectangle {
         id: background
         color: Qt.rgba(0.2, 0.2, 0.2, 0.3)
-        // color: Qt.rgba(30, 30, 46, 0.1)
         radius: Theme.popupBorderRadius
         // border.width: Theme.popupBorderWidth
         // border.color: Theme.borderColor
-        anchors.bottom: parent.bottom 
+        // anchors.bottom: parent.bottom 
         // layer.enabled: true
         // layer.effect: MultiEffect {
         //     shadowEnabled: true
@@ -43,9 +47,12 @@ PanelWindow {
             id: loader
             anchors.fill: parent
             onLoaded: {
-                background.implicitWidth = loader.item.implicitWidth
-                background.implicitHeight = loader.item.implicitHeight
-                visible = true
+                var w = loader.item.implicitWidth
+                var h = loader.item.implicitHeight
+                reposition(w, h)
+                background.implicitWidth = w
+                background.implicitHeight = h
+                root.visible = true
             }
         }
 
@@ -55,39 +62,47 @@ PanelWindow {
         Behavior on implicitWidth {
             NumberAnimation { duration: 400; easing.type: Easing.OutQuint }
         }
-        Behavior on anchors.bottomMargin {
-            NumberAnimation { duration: 400; easing.type: Easing.OutQuint }
-        }
+        Behavior on x { NumberAnimation { duration: 300; easing.type: Easing.OutQuint } }
+        Behavior on y { NumberAnimation { duration: 300; easing.type: Easing.OutQuint } }
 
     }
 
-    function show(component, marginH, marginV, isTop) {
+    function show(component, posH, posV, offsetX, offsetY) {
+        root.hAlign = posH
+        root.vAlign = posV
+        root.offsetX = offsetX
+        root.offsetY = offsetY
 
         if (currentComponent === component) {
-            visible = false
-            currentComponent = null
-            loader.sourceComponent = null
+            close()
             return
         }
 
         currentComponent = component
         loader.sourceComponent = component
-        background.x = marginH
-        background.anchors.bottomMargin = marginV
-        // background.anchors.bottom = undefined
-        // background.anchors.top = undefined
+    }
 
-        // if (isTop) {
-        //     background.anchors.top = root.top
-        //     background.anchors.topMargin = marginV
-        // } else {
-        //     background.anchors.bottom = root.bottom
-        //     background.anchors.bottomMargin = marginV
-        // }
+    function reposition(w, h) {
+        if (hAlign === "left") {
+            background.x = offsetX
+        } else if (hAlign === "center") {
+            background.x = (root.screen.width - root.margins.left - w) / 2 + offsetX
+        } else if (hAlign === "right") {
+            background.x = root.screen.width - root.margins.left - w - offsetX
+        }
+
+        if (vAlign === "top") {
+            background.y = offsetY
+        } else if (vAlign === "center") {
+            background.y = (root.screen.height - h) / 2 + offsetY
+        } else if (vAlign === "bottom") {
+            background.y = root.screen.height - h - offsetY
+        }
+    }
+    
+    function close() {
+        root.visible = false
+        currentComponent = null
+        loader.sourceComponent = null
     }
 }
-
-
-// 1) Хочу переделать вызов mainPopup: контент, положение по вертикали(верх, центр, низ), положение по горизонтали(лево, центр, право)
-// 2) Как реализовать закрытие попапа по клику вне?
-// 3) Что дает переделка mainPopup в синглтон?
