@@ -1,0 +1,12 @@
+[SddmGreeterTheme]
+Name=Custom
+Description=Catppuccin Mocha animated greeter
+Author=you
+Version=1.0
+License=MIT
+Type=sddm-theme
+MainScript=Main.qml
+ConfigFile=theme.conf
+Theme-Id=custom-theme
+Theme-API=2.0
+QtVersion=6
