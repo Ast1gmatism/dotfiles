@@ -17,17 +17,16 @@ Item {
     property real wattage: 15.2
     property string activeProfile: "balanced"
     property bool redshiftEnabled: true
-    property real brightnessLevel: 5
 
     // ── Константы ────────────────────────────────────────────────────────────
     readonly property var profiles: [
-        { id: "saver",    label: "Saver",    accent: Theme.successColor },
-        { id: "balanced", label: "Balanced", accent: "#89b4fa" },
-        { id: "perf",     label: "Perf",     accent: "#f38ba8" }
+        { id: "saver",    icon: "󰌪" },
+        { id: "balanced", icon: "󰾅" },
+        { id: "perf",     icon: "󰓅" }
     ]
 
-    readonly property color batteryGradientStart: "#c6a0f6"
-    readonly property color batteryGradientEnd:   "#f5c2e7"
+    readonly property color batteryGradientStart: Theme.accentSoftColor
+    readonly property color batteryGradientEnd: Theme.accentStrongColor
     readonly property color brightnessColor:      "#f9e2af"
     readonly property color redshiftColor:        "#fab387"
 
@@ -138,54 +137,65 @@ Item {
             }
 
             // ── Кнопки профилей ──────────────────────────────────────────────
-            RowLayout {
+            Rectangle {
+                id: profileSwitch
                 Layout.fillWidth: true
-                spacing: 8
+                Layout.preferredHeight: root.buttonHeight
+                radius: 10
+                color: Theme.subtleFillColor
+                border.color: Theme.borderColor
+                border.width: 1
 
-                Repeater {
-                    model: root.profiles
+                readonly property int currentIndex: {
+                    for (let i = 0; i < root.profiles.length; ++i) {
+                        if (root.profiles[i].id === root.activeProfile)
+                            return i
+                    }
+                    return 0
+                }
 
-                    delegate: Rectangle {
-                        id: profileBtn
+                Rectangle {
+                    id: activePill
+                    width: parent.width / root.profiles.length
+                    height: parent.height
+                    radius: 10
+                    x: width * profileSwitch.currentIndex
+                    color: Theme.activeFillColor
 
-                        required property var modelData
+                    Behavior on x {
+                        NumberAnimation { duration: 180; easing.type: Easing.OutCubic }
+                    }
+                }
 
-                        readonly property bool isActive: root.activeProfile === modelData.id
+                Row {
+                    anchors.fill: parent
 
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: root.buttonHeight
-                        radius: 8
+                    Repeater {
+                        model: root.profiles
 
-                        color: {
-                            if (isActive)
-                                return Qt.alpha(modelData.accent, 0.25)
-                            if (profileArea.containsMouse)
-                                return Qt.alpha(Theme.foregroundColor, 0.10)
-                            return Qt.alpha(Theme.foregroundColor, 0.05)
-                        }
+                        delegate: Item {
+                            width: profileSwitch.width / root.profiles.length
+                            height: profileSwitch.height
 
-                        border.color: isActive ? modelData.accent : "transparent"
-                        border.width: 1
+                            required property var modelData
+                            readonly property bool isActive: root.activeProfile === modelData.id
 
-                        Behavior on color { ColorAnimation { duration: 150 } }
+                            Text {
+                                anchors.centerIn: parent
+                                text: modelData.icon
+                                font.family: Theme.fontFamily
+                                font.pixelSize: 16
+                                color: parent.isActive
+                                    ? Theme.accentStrongColor
+                                    : Theme.foregroundColor
+                            }
 
-                        Text {
-                            anchors.centerIn: parent
-                            text: profileBtn.modelData.label
-                            font.family: Theme.fontFamily
-                            font.pixelSize: 11
-                            font.weight: profileBtn.isActive ? Font.DemiBold : Font.Normal
-                            color: profileBtn.isActive
-                                   ? profileBtn.modelData.accent
-                                   : Theme.foregroundColor
-                        }
-
-                        MouseArea {
-                            id: profileArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: root.activeProfile = profileBtn.modelData.id
+                            MouseArea {
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: root.activeProfile = modelData.id
+                            }
                         }
                     }
                 }
@@ -208,46 +218,61 @@ Item {
             spacing: root.columnSpacing
 
             // ── Слайдер яркости ──────────────────────────────────────────────
-            Slider {
-                id: brightnessSlider
+            Item {
+                id: brightnessControl
 
                 Layout.preferredWidth: 24
                 Layout.preferredHeight: root.gaugeSize
                 Layout.alignment: Qt.AlignHCenter
 
-                orientation: Qt.Vertical
-                from: 100
-                to: 1
-                value: root.brightnessLevel
-                padding: 0
+                property bool isDragging: false // ← отслеживаем только реальный drag
 
-                onValueChanged: root.brightnessLevel = value
+                readonly property real ratio: Power.brightness
+                readonly property real availableTravel: Math.max(1, height - width)
 
-                background: Rectangle {
-                    x: brightnessSlider.availableWidth / 2 - width / 2
-                    width: 6
-                    height: brightnessSlider.availableHeight
-                    radius: 3
-                    color: Qt.alpha(Theme.foregroundColor, 0.1)
+                Rectangle {
+                    id: track
+                    anchors.fill: parent
+                    radius: width / 2
+                    color: Qt.alpha(Theme.foregroundColor, 0.05)
+                    border.color: Theme.borderColor
+                    border.width: 1
 
                     Rectangle {
-                        width: parent.width
-                        height: (1 - brightnessSlider.visualPosition) * parent.height
-                        y: parent.height - height
-                        radius: 3
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.bottom: parent.bottom
+                        height: parent.width + brightnessControl.ratio * brightnessControl.availableTravel
+                        radius: width / 2
                         color: root.brightnessColor
+
+                        Behavior on height {
+                            enabled: !brightnessControl.isDragging // ← анимируем всё, кроме драга
+                            NumberAnimation { duration: 120; easing.type: Easing.OutCubic }
+                        }
                     }
                 }
 
-                handle: Rectangle {
-                    x: (brightnessSlider.availableWidth - width) / 2
-                    y: brightnessSlider.visualPosition * (brightnessSlider.availableHeight - height)
-                    width: 14
-                    height: 14
-                    radius: 7
-                    color: brightnessSlider.pressed ? root.brightnessColor : Theme.foregroundColor
-                    border.color: root.brightnessColor
-                    border.width: 1
+                MouseArea {
+                    id: brightnessArea
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+
+                    onPressed: {
+                        brightnessControl.isDragging = false
+                        setBrightnessFromY(mouse.y)
+                    }
+                    onPositionChanged: {
+                        if (pressed) brightnessControl.isDragging = true
+                        setBrightnessFromY(mouse.y)
+                    }
+                    onReleased: brightnessControl.isDragging = false
+
+                    function setBrightnessFromY(y) {
+                        const clampedY = Math.max(0, Math.min(brightnessControl.availableTravel, y))
+                        const newRatio = 1 - (clampedY / brightnessControl.availableTravel)
+                        Power.set(newRatio)
+                    }
                 }
             }
 

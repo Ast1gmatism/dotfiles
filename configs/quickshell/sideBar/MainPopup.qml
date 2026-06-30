@@ -27,10 +27,10 @@ PanelWindow {
 
     Rectangle {
         id: background
-        color: Qt.rgba(0.2, 0.2, 0.2, 0.3)
+        color: Qt.alpha(Theme.backgroundColor, 0.7)
         radius: Theme.popupBorderRadius
         // border.width: Theme.popupBorderWidth
-        // border.color: Theme.borderColor
+        border.color: Theme.borderColor
         // anchors.bottom: parent.bottom 
         // layer.enabled: true
         // layer.effect: MultiEffect {

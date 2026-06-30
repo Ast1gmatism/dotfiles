@@ -12,30 +12,92 @@ Singleton {
     property bool isCharging: UPower.displayDevice.state === UPowerDeviceState.Charging
     property bool isFull: UPower.displayDevice.state === UPowerDeviceState.FullyCharged
     property bool onAC: isCharging || isFull
-    // Потребление / Зарядка в Ваттах
     property real watts: UPower.displayDevice.energyRate 
-
-    // Время до разрядки (в секундах)
     property real timeToEmpty: UPower.displayDevice.timeToEmpty 
-
-    // Время до полной зарядки (в секундах)
     property real timeToFull: UPower.displayDevice.timeToFull
     
-    // Brightness
-    property int brightness: 0
+    // ── Brightness ────────────────────────────────────────────────
+    property string brightnessDevicePath: ""
+    property int brightnessMax: 0
+    property bool brightnessReady: false
+    property real brightness: 0
 
-    // Process {
-    //     id: initProc
-    //     command: ["brightnessctl", "g", "&&", "brightnessctl", "m"]
-    //     running: true
-    //     stdout: SplitParser {
-    //         onRead: data => {
-    //             const parts = data.split(" ");
-    //             const current = parseInt(parts[0]);
-    //             const max = parseInt(parts[1]);
-    //             root.brightness = current / max;
-    //             console.log(parts)
-    //         }
-    //     }
-    // }
+    Component.onCompleted: findBacklightDevice.running = true
+
+    Process {
+        id: findBacklightDevice
+        command: ["bash", "-c", "ls -d /sys/class/backlight/*/ 2>/dev/null | head -n1"]
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const dir = text.trim()
+                if (!dir) {
+                    console.error("Power: no backlight device found")
+                    return
+                }
+                root.brightnessDevicePath = dir
+                readMaxBrightness.command = ["cat", dir + "max_brightness"]
+                readMaxBrightness.running = true
+            }
+        }
+    }
+
+    Process {
+        id: readMaxBrightness
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const max = parseInt(text.trim())
+                if (!isNaN(max) && max > 0) {
+                    root.brightnessMax = max
+                    brightnessFile.path = root.brightnessDevicePath + "brightness"
+                } else {
+                    console.error("Power: invalid max_brightness value")
+                }
+            }
+        }
+    }
+
+    FileView {
+        id: brightnessFile
+        path: ""
+        watchChanges: true
+
+        function updateValue() {
+            reload()
+            const raw = parseInt(text().trim())
+            if (isNaN(raw) || root.brightnessMax <= 0)
+                return
+
+            const normalized = raw / root.brightnessMax
+            if (normalized !== root.brightness) {
+                root.brightness = normalized
+                console.log("Power: brightness updated to", (normalized * 100).toFixed(1) + "%")
+            }
+        }
+
+        onLoaded: {
+            root.brightnessReady = true
+            updateValue()
+        }
+        onFileChanged: updateValue()
+    }
+
+    // ── Запись яркости ───────────────────────────────────────────
+    Process {
+        id: setBrightnessProc
+    }
+
+    function set(val: real) {
+        if (!root.brightnessReady || root.brightnessMax <= 0) return
+
+        const clamped = Math.max(0, Math.min(1, val))
+        const raw = Math.round(clamped * root.brightnessMax)
+
+        if (setBrightnessProc.running) {
+            setBrightnessProc.running = false
+        }
+
+        setBrightnessProc.command = ["brightnessctl", "-d", "amdgpu_bl2", "s", raw.toString()]
+        setBrightnessProc.running = true
+    }
 }
