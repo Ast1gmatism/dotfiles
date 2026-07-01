@@ -5,6 +5,7 @@ import qs.components
 import qs.theme
 
 Item {
+    id: root
     implicitWidth: btn.width
     implicitHeight: btn.height
 
@@ -24,7 +25,7 @@ Item {
             if (p <= 90) return Theme.iconsPath + "battery/high.svg"
             return Theme.iconsPath + "battery/full.svg"
         }
-        onClicked: mainPopup.show(powerContent, "left", "bottom", 10,10)
+        onClicked: mainPopup.show(powerContent, "left", "bottom", 10, 10, root)
     }
 
     Rectangle {

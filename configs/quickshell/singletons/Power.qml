@@ -22,7 +22,16 @@ Singleton {
     property bool brightnessReady: false
     property real brightness: 0
 
-    Component.onCompleted: findBacklightDevice.running = true
+    Component.onCompleted: {
+        findBacklightDevice.running = true
+        console.log("Battery level:", batteryLevel)
+        console.log("Is charging:", isCharging)
+        console.log("Is full:", isFull)
+        console.log("On AC:", onAC)
+        console.log("Watts:", watts)
+        console.log("Time to empty:", timeToEmpty)
+        console.log("Time to full:", timeToFull)
+    }
 
     Process {
         id: findBacklightDevice
@@ -71,7 +80,6 @@ Singleton {
             const normalized = raw / root.brightnessMax
             if (normalized !== root.brightness) {
                 root.brightness = normalized
-                console.log("Power: brightness updated to", (normalized * 100).toFixed(1) + "%")
             }
         }
 

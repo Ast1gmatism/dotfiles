@@ -1,9 +1,17 @@
 import QtQuick
 import qs.theme
+import qs.popups
 
 Item {
+    id: root
     width: Theme.sideBarWidth
     height: Theme.sideBarWidth 
+
+    Component {
+        id: controlContent
+        ControlCenter {}
+    }
+
     Image {
         id: icon
         anchors.centerIn: parent
@@ -16,6 +24,6 @@ Item {
         id: mouseArea
         anchors.fill: parent
         hoverEnabled: true
-        onClicked: console.log("Menu clicked") // TODO: main popup
+        onClicked: mainPopup.show(controlContent, "left", "top", 10, 10, root)
     }
 }

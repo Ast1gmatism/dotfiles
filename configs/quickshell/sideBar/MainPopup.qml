@@ -1,4 +1,5 @@
 import Quickshell
+import Quickshell.Hyprland
 import QtQuick.Effects
 import QtQuick
 import Quickshell.Wayland
@@ -24,24 +25,25 @@ PanelWindow {
     property string vAlign: "bottom"
     property real offsetX: 0
     property real offsetY: 0
+    property bool animEnabled: true
+
+    GlobalShortcut {
+        name: "popupEscape"
+        description: "Close popup"
+
+        onPressed: {
+            if (root.visible) {
+                root.close()
+            }
+        }
+    }
 
     Rectangle {
         id: background
         color: Qt.alpha(Theme.backgroundColor, 0.7)
         radius: Theme.popupBorderRadius
-        // border.width: Theme.popupBorderWidth
+        border.width: Theme.popupBorderWidth
         border.color: Theme.borderColor
-        // anchors.bottom: parent.bottom 
-        // layer.enabled: true
-        // layer.effect: MultiEffect {
-        //     shadowEnabled: true
-        //     shadowColor: Qt.alpha("#000000", 0.5)
-        //     shadowBlur: 0.5       // 0.0 - 1.0
-        //     shadowHorizontalOffset: 0
-        //     shadowVerticalOffset: 8
-        //     shadowScale: 1.1
-        // }
-
 
         Loader {
             id: loader
@@ -52,30 +54,56 @@ PanelWindow {
                 reposition(w, h)
                 background.implicitWidth = w
                 background.implicitHeight = h
-                root.visible = true
             }
         }
 
         Behavior on implicitHeight {
+            enabled: root.animEnabled
             NumberAnimation { duration: 400; easing.type: Easing.OutQuint }
         }
         Behavior on implicitWidth {
+            enabled: root.animEnabled
             NumberAnimation { duration: 400; easing.type: Easing.OutQuint }
         }
-        Behavior on x { NumberAnimation { duration: 300; easing.type: Easing.OutQuint } }
-        Behavior on y { NumberAnimation { duration: 300; easing.type: Easing.OutQuint } }
-
+        Behavior on x {
+            enabled: root.animEnabled
+            NumberAnimation { duration: 300; easing.type: Easing.OutQuint }
+        }
+        Behavior on y {
+            enabled: root.animEnabled
+            NumberAnimation { duration: 300; easing.type: Easing.OutQuint }
+        }
     }
 
-    function show(component, posH, posV, offsetX, offsetY) {
+    function show(component, posH, posV, offX, offY, triggerItem) {
         root.hAlign = posH
         root.vAlign = posV
-        root.offsetX = offsetX
-        root.offsetY = offsetY
+        root.offsetX = offX
+        root.offsetY = offY
 
         if (currentComponent === component) {
             close()
             return
+        }
+
+        if (!root.visible) {
+            var startX = 0
+            var startY = 0
+
+            if (triggerItem) {
+                var pos = triggerItem.mapToItem(null, triggerItem.width / 2, triggerItem.height / 2)
+                startX = pos.x
+                startY = pos.y
+            }
+
+            root.animEnabled = false
+            background.x = startX
+            background.y = startY
+            background.implicitWidth = 0
+            background.implicitHeight = 0
+            root.visible = true
+            root.animEnabled = true
+            Qt.callLater(() => background.forceActiveFocus())
         }
 
         currentComponent = component

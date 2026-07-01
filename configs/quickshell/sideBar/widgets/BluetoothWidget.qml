@@ -5,6 +5,7 @@ import qs.components
 import qs.theme
 
 Item {
+    id: root
     implicitWidth: btn.width
     implicitHeight: btn.height
     
@@ -21,6 +22,6 @@ Item {
             if (Bluetooth.isConnected) return Theme.iconsPath + "bluetooth/connected.svg"
             return Theme.iconsPath + "bluetooth/on.svg"
         }
-        onClicked: mainPopup.show(bluetoothContent, "left", "bottom", 10,10)
+        onClicked: mainPopup.show(bluetoothContent, "left", "bottom", 10, 10, root)
     }
 }
