@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import qs.theme
 import qs.singletons
+import qs.components
 
 Item {
     id: root
@@ -25,11 +26,6 @@ Item {
         { id: "perf",     icon: "󰓅" }
     ]
 
-    readonly property color batteryGradientStart: Theme.accentSoftColor
-    readonly property color batteryGradientEnd: Theme.accentStrongColor
-    readonly property color brightnessColor:      "#f9e2af"
-    readonly property color redshiftColor:        "#fab387"
-
     readonly property real gaugeSize: 145
     readonly property real buttonHeight: 36
     readonly property real columnSpacing: 12
@@ -47,68 +43,24 @@ Item {
             Layout.alignment: Qt.AlignTop
             spacing: root.columnSpacing
 
-            // ── Круговой индикатор батареи ───────────────────────────────────
-            Item {
+            BatteryRing {
+                id: chargeRing
                 Layout.preferredWidth: root.gaugeSize
                 Layout.preferredHeight: root.gaugeSize
                 Layout.alignment: Qt.AlignHCenter
 
-                readonly property real arcRadius: width / 2 - 7
-                readonly property real arcThickness: 12
-                readonly property real arcStartAngle: (210 - 90) * Math.PI / 180
-                readonly property real arcSweep: 300 * Math.PI / 180
-
-                Canvas {
-                    anchors.fill: parent
-                    onPaint: {
-                        const ctx = getContext("2d")
-                        ctx.reset()
-                        ctx.lineWidth = parent.arcThickness
-                        ctx.lineCap = "round"
-                        ctx.strokeStyle = Qt.alpha(Theme.foregroundColor, 0.1)
-                        ctx.beginPath()
-                        ctx.arc(width / 2, height / 2, parent.arcRadius,
-                                parent.arcStartAngle,
-                                parent.arcStartAngle + parent.arcSweep)
-                        ctx.stroke()
-                    }
-                }
-
-                Canvas {
-                    id: fillArc
-                    anchors.fill: parent
-
-                    Connections {
-                        target: root
-                        function onBatteryLevelChanged() { fillArc.requestPaint() }
-                    }
-
-                    onPaint: {
-                        const ctx = getContext("2d")
-                        ctx.reset()
-
-                        const gradient = ctx.createLinearGradient(0, 0, width, height)
-                        gradient.addColorStop(0, root.batteryGradientStart)
-                        gradient.addColorStop(1, root.batteryGradientEnd)
-
-                        ctx.lineWidth = parent.arcThickness
-                        ctx.lineCap = "round"
-                        ctx.strokeStyle = gradient
-                        ctx.beginPath()
-                        ctx.arc(width / 2, height / 2, parent.arcRadius,
-                                parent.arcStartAngle,
-                                parent.arcStartAngle + parent.arcSweep * (root.batteryLevel / 100))
-                        ctx.stroke()
-                    }
-                }
+                value: root.batteryLevel
+                gradientStart: Theme.batteryGradientStart
+                gradientMid:   Theme.batteryGradientMid
+                gradientEnd:   Theme.batteryGradientStart  // симметрия — mauve с обеих сторон
 
                 Text {
                     id: percentageText
                     anchors.centerIn: parent
                     text: Math.round(root.batteryLevel) + "%"
                     font.family: Theme.fontFamily
-                    font.pixelSize: 38
-                    font.weight: Font.Bold
+                    font.pixelSize: 30
+                    font.weight: Font.DemiBold
                     color: Theme.foregroundColor
                 }
 
@@ -121,8 +73,8 @@ Item {
                     font.pixelSize: 12
                     font.weight: Font.DemiBold
                     color: root.isCharging
-                           ? Theme.successColor
-                           : Qt.alpha(Theme.foregroundColor, 0.6)
+                        ? Theme.successColor
+                        : Qt.alpha(Theme.foregroundColor, 0.6)
                 }
 
                 Text {
@@ -225,7 +177,7 @@ Item {
                 Layout.preferredHeight: root.gaugeSize
                 Layout.alignment: Qt.AlignHCenter
 
-                property bool isDragging: false // ← отслеживаем только реальный drag
+                property bool isDragging: false
 
                 readonly property real ratio: Power.brightness
                 readonly property real availableTravel: Math.max(1, height - width)
@@ -244,10 +196,10 @@ Item {
                         anchors.bottom: parent.bottom
                         height: parent.width + brightnessControl.ratio * brightnessControl.availableTravel
                         radius: width / 2
-                        color: root.brightnessColor
+                        color: Theme.brightnessColor
 
                         Behavior on height {
-                            enabled: !brightnessControl.isDragging // ← анимируем всё, кроме драга
+                            enabled: !brightnessControl.isDragging
                             NumberAnimation { duration: 120; easing.type: Easing.OutCubic }
                         }
                     }
@@ -287,13 +239,13 @@ Item {
 
                 color: {
                     if (root.redshiftEnabled)
-                        return Qt.alpha(root.redshiftColor, 0.25)
+                        return Qt.alpha(Theme.redshiftColor, 0.25)
                     if (rsMouseArea.containsMouse)
                         return Qt.alpha(Theme.foregroundColor, 0.10)
                     return Qt.alpha(Theme.foregroundColor, 0.05)
                 }
 
-                border.color: root.redshiftEnabled ? root.redshiftColor : "transparent"
+                border.color: root.redshiftEnabled ? Theme.redshiftColor : "transparent"
                 border.width: 1
 
                 Behavior on color { ColorAnimation { duration: 150 } }
@@ -303,7 +255,7 @@ Item {
                     text: "󰖔"
                     font.family: Theme.fontFamily
                     font.pixelSize: 16
-                    color: root.redshiftEnabled ? root.redshiftColor : Theme.foregroundColor
+                    color: root.redshiftEnabled ? Theme.redshiftColor : Theme.foregroundColor
                 }
 
                 MouseArea {

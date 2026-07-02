@@ -3,34 +3,43 @@ import Quickshell
 import QtQuick
 
 Singleton {
-    // Цвета
-    readonly property color backgroundColor: "#1f1f28"
-    readonly property color surfaceColor:    "#2a2a37"
-    readonly property color foregroundColor: "#c5c9c5"
-    readonly property color borderColor:     Qt.rgba(205, 214, 244, 0.15)
+    // ── Роли: фон и поверхности ──────────────────────────
+    readonly property color backgroundColor: Colors.palette.base
+    readonly property color surfaceColor:    Colors.palette.surface0
+    readonly property color borderColor:     Qt.alpha(Colors.palette.lavender, 0.15)
 
-    readonly property color successColor:    "#a6e3a1"
+    // ── Роли: текст ──────────────────────────────────────
+    readonly property color foregroundColor: Colors.palette.text
+    readonly property color mutedTextColor:  Qt.alpha(Colors.palette.text, 0.55)
 
-    readonly property color accentStrongColor:  "#b4befe"
-    readonly property color accentSoftColor:    "#9399b2"
+    // ── Роли: состояния ──────────────────────────────────
+    readonly property color successColor: Colors.palette.green
+    readonly property color warningColor: Colors.palette.peach
+    readonly property color errorColor:   Colors.palette.red
 
-    readonly property color mutedTextColor:     Qt.rgba(197/255, 201/255, 197/255, 0.55)
-    readonly property color subtleFillColor:    Qt.rgba(197/255, 201/255, 197/255, 0.06)
-    readonly property color hoverFillColor:     Qt.rgba(197/255, 201/255, 197/255, 0.10)
-    readonly property color activeFillColor:    Qt.rgba(180/255, 190/255, 254/255, 0.16)
-    // Размеры
+    // ── Роли: акценты ────────────────────────────────────
+    readonly property color accentStrongColor: Colors.palette.lavender
+    readonly property color accentSoftColor:   Colors.palette.overlay2
+
+    // ── Роли: заливки состояний UI ───────────────────────
+    readonly property color subtleFillColor: Qt.alpha(Colors.palette.text, 0.06)
+    readonly property color hoverFillColor:  Qt.alpha(Colors.palette.text, 0.10)
+    readonly property color activeFillColor: Qt.alpha(Colors.palette.lavender, 0.16)
+
+    // ── Роли: виджет-специфичные ─────────────────────────
+    readonly property color batteryGradientStart: Colors.palette.mauve
+    readonly property color batteryGradientMid:   Colors.palette.pink
+    readonly property color brightnessColor:      Colors.palette.yellow
+    readonly property color redshiftColor:        Colors.palette.peach
+    readonly property color volumeColor:          Colors.palette.blue
+
+    // ── Размеры, шрифты ──────────────────────────────────
     readonly property int sideBarWidth: 40
-    readonly property int widgetHeight: 24 
+    readonly property int widgetHeight: 24
     readonly property int containerPadding: 6
-
-    // Попапы
     readonly property int popupBorderRadius: 16
     readonly property int popupBorderWidth: 1
-
-    // Шрифт
     readonly property string fontFamily: "JetBrainsMono Nerd Font"
     readonly property int fontSize: 14
-
-    // Прочее
     readonly property string iconsPath: Qt.resolvedUrl("../icons/")
 }

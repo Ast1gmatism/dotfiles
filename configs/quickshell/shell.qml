@@ -3,5 +3,5 @@ import qs.sideBar
 
 Scope {
     SideBar {}
-    CaptureWindow {}
+    // CaptureWindow {}
 }

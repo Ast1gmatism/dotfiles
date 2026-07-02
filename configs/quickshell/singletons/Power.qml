@@ -22,16 +22,7 @@ Singleton {
     property bool brightnessReady: false
     property real brightness: 0
 
-    Component.onCompleted: {
-        findBacklightDevice.running = true
-        console.log("Battery level:", batteryLevel)
-        console.log("Is charging:", isCharging)
-        console.log("Is full:", isFull)
-        console.log("On AC:", onAC)
-        console.log("Watts:", watts)
-        console.log("Time to empty:", timeToEmpty)
-        console.log("Time to full:", timeToFull)
-    }
+    Component.onCompleted: findBacklightDevice.running = true
 
     Process {
         id: findBacklightDevice

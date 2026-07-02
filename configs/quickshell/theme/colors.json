@@ -1,0 +1,27 @@
+{
+    "name": "kanagawa-custom",
+    "crust":    "#16161d",
+    "mantle":   "#1a1a22",
+    "base":     "#1f1f28",
+    "surface0": "#2a2a37",
+    "surface1": "#363646",
+    "surface2": "#54546d",
+
+    "overlay0": "#54546d",
+    "overlay1": "#727289",
+    "overlay2": "#9399b2",
+
+    "text":     "#c5c9c5",
+    "subtext1": "#a6adc8",
+    "subtext0": "#7e828c",
+
+    "red":      "#f38ba8",
+    "peach":    "#fab387",
+    "yellow":   "#f9e2af",
+    "green":    "#a6e3a1",
+    "teal":     "#94e2d5",
+    "blue":     "#89b4fa",
+    "mauve":    "#c6a0f6",
+    "pink":     "#f5c2e7",
+    "lavender": "#b4befe"
+}

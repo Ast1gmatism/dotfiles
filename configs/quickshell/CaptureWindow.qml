@@ -5,8 +5,7 @@ import qs.theme
 
 PanelWindow {
     id: root
-    
-    visible: true
+    visible: false
     color: "transparent"
     
     // Полноэкранное окно для затемнения
