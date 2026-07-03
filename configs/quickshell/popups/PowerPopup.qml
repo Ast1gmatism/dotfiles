@@ -12,12 +12,8 @@ Item {
     implicitHeight: 230
 
     // ── Данные ───────────────────────────────────────────────────────────────
-    property real batteryLevel: Power.batteryLevel
-    property bool isCharging: false
-    property string timeRemaining: "~1:39"
-    property real wattage: 15.2
-    property string activeProfile: "balanced"
-    property bool redshiftEnabled: true
+    readonly property string activeProfile: Power.activeProfile
+    readonly property bool redshiftEnabled: Power.redshiftEnabled
 
     // ── Константы ────────────────────────────────────────────────────────────
     readonly property var profiles: [
@@ -49,15 +45,15 @@ Item {
                 Layout.preferredHeight: root.gaugeSize
                 Layout.alignment: Qt.AlignHCenter
 
-                value: root.batteryLevel
+                value: Power.batteryLevel
                 gradientStart: Theme.batteryGradientStart
                 gradientMid:   Theme.batteryGradientMid
-                gradientEnd:   Theme.batteryGradientStart  // симметрия — mauve с обеих сторон
+                gradientEnd:   Theme.batteryGradientStart
 
                 Text {
                     id: percentageText
                     anchors.centerIn: parent
-                    text: Math.round(root.batteryLevel) + "%"
+                    text: Math.round(Power.batteryLevel) + "%"
                     font.family: Theme.fontFamily
                     font.pixelSize: 30
                     font.weight: Font.DemiBold
@@ -68,11 +64,11 @@ Item {
                     anchors.top: percentageText.bottom
                     anchors.topMargin: -7
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: (root.isCharging ? "+" : "-") + root.wattage.toFixed(1) + "W"
+                    text: Power.wattsStr
                     font.family: Theme.fontFamily
                     font.pixelSize: 12
                     font.weight: Font.DemiBold
-                    color: root.isCharging
+                    color: Power.isCharging
                         ? Theme.successColor
                         : Qt.alpha(Theme.foregroundColor, 0.6)
                 }
@@ -81,7 +77,7 @@ Item {
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.bottom: parent.bottom
                     anchors.bottomMargin: 3
-                    text: root.timeRemaining
+                    text: Power.timeStr
                     font.family: Theme.fontFamily
                     font.pixelSize: 14
                     color: Qt.alpha(Theme.foregroundColor, 0.5)
@@ -146,7 +142,7 @@ Item {
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
-                                onClicked: root.activeProfile = modelData.id
+                                onClicked: Power.setProfile(modelData.id)
                             }
                         }
                     }
@@ -263,7 +259,7 @@ Item {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: root.redshiftEnabled = !root.redshiftEnabled
+                    onClicked: Power.redshiftEnabled = !Power.redshiftEnabled
                 }
             }
         }
