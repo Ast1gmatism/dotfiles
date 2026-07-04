@@ -5,8 +5,8 @@ Item {
     id: root
     property real value: 0
     
-    implicitWidth: 140
-    implicitHeight: 60
+    implicitWidth: 100
+    implicitHeight: 30
 
     Row {
         anchors.centerIn: parent

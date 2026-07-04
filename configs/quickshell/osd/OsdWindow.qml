@@ -78,7 +78,7 @@ PanelWindow {
                 id: osdShow
                 target: osdWrapper
                 property: "y"
-                to: root.screen.height - 180
+                to: root.screen.height - 60
                 duration: 200
                 easing.type: Easing.OutQuint
                 onStopped: positioned = true

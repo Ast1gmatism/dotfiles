@@ -2,8 +2,8 @@ import QtQuick
 
 Item {
     id: root
-    implicitWidth: 200
-    implicitHeight: 60
+    implicitWidth: 100
+    implicitHeight: 30
     property real value: 0
 
     Text {
