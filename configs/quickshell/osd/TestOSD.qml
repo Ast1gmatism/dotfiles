@@ -3,7 +3,7 @@ import QtQuick
 Item {
     id: root
     implicitWidth: 200
-    implicitHeight: 70
+    implicitHeight: 60
     property real value: 0
 
     Text {
