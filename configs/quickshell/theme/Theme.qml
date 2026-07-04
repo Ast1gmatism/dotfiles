@@ -6,6 +6,8 @@ Singleton {
     // ── Роли: фон и поверхности ──────────────────────────
     readonly property color backgroundColor: Colors.palette.base
     readonly property color surfaceColor:    Colors.palette.surface0
+    readonly property color sectionColor:    Qt.alpha(Colors.palette.surface1, 0.55)
+    readonly property color insetColor:      Qt.alpha(Colors.palette.base, 0.55)
     readonly property color borderColor:     Qt.alpha(Colors.palette.lavender, 0.15)
 
     // ── Роли: текст ──────────────────────────────────────

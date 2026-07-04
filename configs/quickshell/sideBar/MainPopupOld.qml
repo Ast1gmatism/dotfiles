@@ -28,7 +28,7 @@ PanelWindow {
     property real offsetY: 0
     property bool animEnabled: true
 
-    readonly property int fadeDuration: 100
+    readonly property int fadeDuration: 200
 
     GlobalShortcut {
         name: "popupEscape"
@@ -124,11 +124,11 @@ PanelWindow {
         }
         Behavior on x {
             enabled: root.animEnabled
-            NumberAnimation { duration: 400; easing.type: Easing.OutQuint }
+            NumberAnimation { duration: 300; easing.type: Easing.OutQuint }
         }
         Behavior on y {
             enabled: root.animEnabled
-            NumberAnimation { duration: 400; easing.type: Easing.OutQuint }
+            NumberAnimation { duration: 300; easing.type: Easing.OutQuint }
         }
     }
 
