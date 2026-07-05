@@ -15,8 +15,9 @@ Item {
         anchors.fill: parent
 
         ShapePath {
-            fillColor: Theme.backgroundColor
-            strokeColor: "transparent"
+            fillColor: Theme.glassContainer
+            strokeColor: Theme.glassContainerBorder
+            strokeWidth: 1
             startY: -r
             PathQuad { relativeX:  r; relativeY: r; relativeControlX:  0; relativeControlY: r }
             PathQuad { relativeX:  r; relativeY: r; relativeControlX:  r; relativeControlY: 0 }

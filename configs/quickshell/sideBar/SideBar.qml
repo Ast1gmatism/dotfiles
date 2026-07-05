@@ -10,7 +10,7 @@ Variants {
         id: mainPanel
         required property var modelData
         screen: modelData
-        color: Qt.alpha(Theme.backgroundColor, 0.7)
+        color: Theme.glassPanel
 
         anchors {
             top: true

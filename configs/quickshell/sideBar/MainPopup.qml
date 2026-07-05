@@ -40,7 +40,7 @@ PanelWindow {
 
     Rectangle {
         id: background
-        color: Qt.alpha(Theme.backgroundColor, 0.7)
+        color: Theme.glassContainer
         radius: Theme.popupBorderRadius
         border.width: Theme.popupBorderWidth
         border.color: Theme.borderColor

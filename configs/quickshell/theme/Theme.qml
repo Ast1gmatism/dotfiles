@@ -10,6 +10,19 @@ Singleton {
     readonly property color insetColor:      Qt.alpha(Colors.palette.base, 0.55)
     readonly property color borderColor:     Qt.alpha(Colors.palette.lavender, 0.15)
 
+    // ── Роли: стекло (glassmorphism) ─────────────────────
+    // Уровень 1: панель
+    readonly property color glassPanel:           Qt.alpha(Colors.palette.base, 0.20)
+
+    // Уровень 2: внешние контейнеры (Top / Center / Bottom)
+    readonly property color glassContainer:       Qt.alpha(Colors.palette.base, 0.55)
+    readonly property color glassContainerBorder: Qt.alpha(Colors.palette.text, 0.08)
+
+    // Уровень 3: внутренние подгруппы (с градиентом объема)
+    readonly property color glassGroupStart:      Qt.alpha(Colors.palette.surface1, 0.55)
+    readonly property color glassGroupEnd:        Qt.alpha(Colors.palette.surface0, 0.40)
+    readonly property color glassGroupBorder:     Qt.alpha(Colors.palette.text, 0.10)
+
     // ── Роли: текст ──────────────────────────────────────
     readonly property color foregroundColor: Colors.palette.text
     readonly property color mutedTextColor:  Qt.alpha(Colors.palette.text, 0.55)

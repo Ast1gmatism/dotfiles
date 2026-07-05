@@ -45,7 +45,10 @@ Item {
             Layout.fillHeight: true
 
             radius: root.sectionRadius
-            color: Theme.sectionColor
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: Theme.glassGroupStart }
+                GradientStop { position: 1.0; color: Theme.glassGroupEnd }
+            }
 
             ColumnLayout {
                 id: leftGroup
@@ -103,9 +106,13 @@ Item {
                     Layout.fillWidth: true
                     Layout.preferredHeight: root.buttonHeight
                     radius: 10
-                    color: Theme.subtleFillColor
-                    border.color: Theme.borderColor
                     border.width: 1
+                    border.color: Theme.glassContainerBorder
+
+                    gradient: Gradient {
+                        GradientStop { position: 0.0; color: Theme.glassGroupEnd }
+                        GradientStop { position: 1.0; color: Theme.glassGroupStart }
+                    }
 
                     readonly property int currentIndex: {
                         for (let i = 0; i < root.profiles.length; ++i) {
@@ -171,7 +178,10 @@ Item {
             Layout.fillHeight: true
 
             radius: root.sectionRadius
-            color: Theme.sectionColor
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: Theme.glassGroupStart }
+                GradientStop { position: 1.0; color: Theme.glassGroupEnd }
+            }
 
             ColumnLayout {
                 id: rightGroup
@@ -246,18 +256,15 @@ Item {
                     Layout.alignment: Qt.AlignHCenter
                     radius: 8
 
-                    color: {
-                        if (root.redshiftEnabled)
-                            return Qt.alpha(Theme.redshiftColor, 0.25)
-                        if (rsMouseArea.containsMouse)
-                            return Qt.alpha(Theme.foregroundColor, 0.10)
-                        return Qt.alpha(Theme.foregroundColor, 0.05)
+                    gradient: Gradient {
+                        GradientStop { position: 0.0; color: Theme.glassGroupEnd }
+                        GradientStop { position: 1.0; color: Theme.glassGroupStart }
                     }
 
-                    border.color: root.redshiftEnabled ? Theme.redshiftColor : "transparent"
+                    border.color: root.redshiftEnabled ? Theme.redshiftColor : Theme.glassContainerBorder
                     border.width: 1
 
-                    Behavior on color { ColorAnimation { duration: 150 } }
+                    Behavior on border.color { ColorAnimation { duration: 150 } }
 
                     Text {
                         anchors.centerIn: parent
