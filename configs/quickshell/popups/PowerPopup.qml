@@ -86,7 +86,7 @@ Item {
                         font.weight: Font.DemiBold
                         color: Power.isCharging
                             ? Theme.successColor
-                            : Qt.alpha(Theme.foregroundColor, 0.6)
+                            : Theme.mutedTextColor
                     }
 
                     Text {
@@ -96,7 +96,7 @@ Item {
                         text: Power.timeStr
                         font.family: Theme.fontFamily
                         font.pixelSize: 14
-                        color: Qt.alpha(Theme.foregroundColor, 0.5)
+                        color: Theme.mutedTextColor
                     }
                 }
 
@@ -154,7 +154,7 @@ Item {
                                     font.family: Theme.fontFamily
                                     font.pixelSize: 16
                                     color: parent.isActive
-                                        ? Theme.accentStrongColor
+                                        ? Theme.accentColor
                                         : Theme.foregroundColor
                                 }
 
@@ -205,8 +205,8 @@ Item {
                         id: track
                         anchors.fill: parent
                         radius: width / 2
-                        color: Qt.alpha(Theme.foregroundColor, 0.05)
-                        border.color: Theme.borderColor
+                        color: Theme.subtleFillColor
+                        border.color: Theme.glassContainerBorder
                         border.width: 1
 
                         Rectangle {

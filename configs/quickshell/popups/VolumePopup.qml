@@ -6,8 +6,8 @@ import qs.theme
 Item {
     id: root
 
-    implicitWidth: 76
-    implicitHeight: 230
+    implicitWidth: 76       // FIXME:должно зависеть от дочки по аналогии с PowerWidget
+    implicitHeight: 230     // FIXME: тоже
 
     // ── Данные ───────────────────────────────────────────────────────────────
     property real volumeLevel: 65
@@ -15,7 +15,6 @@ Item {
     property string outputDevice: "Speakers"
 
     // ── Константы ────────────────────────────────────────────────────────────
-    readonly property color volumeColor: "#89b4fa" // Тот же синий из профилей
     readonly property real buttonHeight: 36
     readonly property real columnSpacing: 12
 
@@ -35,7 +34,7 @@ Item {
                 text: "Volume"
                 font.family: Theme.fontFamily
                 font.pixelSize: 12
-                color: Qt.alpha(Theme.foregroundColor, 0.6)
+                color: Theme.mutedTextColor
                 Layout.alignment: Qt.AlignHCenter
             }
 
@@ -59,14 +58,14 @@ Item {
                     width: 6
                     height: volumeSlider.availableHeight
                     radius: 3
-                    color: Qt.alpha(Theme.foregroundColor, 0.1)
+                    color: Theme.hoverFillColor
 
                     Rectangle {
                         width: parent.width
                         height: (1 - volumeSlider.visualPosition) * parent.height
                         y: parent.height - height
                         radius: 3
-                        color: root.isMuted ? Qt.alpha(Theme.foregroundColor, 0.3) : root.volumeColor
+                        color: root.isMuted ? Theme.disabledTextColor : Theme.volumeColor
                     }
                 }
 
@@ -76,8 +75,8 @@ Item {
                     width: 14
                     height: 14
                     radius: 7
-                    color: volumeSlider.pressed ? root.volumeColor : Theme.foregroundColor
-                    border.color: root.isMuted ? Theme.foregroundColor : root.volumeColor
+                    color: volumeSlider.pressed ? Theme.volumeColor : Theme.foregroundColor
+                    border.color: root.isMuted ? Theme.foregroundColor : Theme.volumeColor
                     border.width: 1
                 }
             }

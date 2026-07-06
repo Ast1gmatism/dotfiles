@@ -4,6 +4,7 @@ import qs.singletons
 import qs.theme
 
 PanelWindow {
+    // TODO: поддержка мультимонитора
     // =================================== //
     id: root
     color: "transparent"
@@ -26,6 +27,7 @@ PanelWindow {
     readonly property var osdConfigs: ({
         "brightness": { singleton: Power, property: "brightness", contentFile: "BrightnessOSD.qml" },
         "volume": { singleton: Volume, property: "volume", contentFile: "TestOSD.qml" }
+        // FIXME: заменить на нормальный VolumeOSD
     })
     
     property var activeOsds: []

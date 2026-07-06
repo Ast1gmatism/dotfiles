@@ -26,6 +26,7 @@ PanelWindow {
     property string vAlign: "bottom"
     property real offsetX: 0
     property real offsetY: 0
+    // TODO: заменить 9-позиционную систему на гибкое позиционирование
     property bool animEnabled: true
 
     readonly property int fadeDuration: 100
@@ -43,10 +44,11 @@ PanelWindow {
         color: Theme.glassContainer
         radius: Theme.popupBorderRadius
         border.width: Theme.popupBorderWidth
-        border.color: Theme.borderColor
+        border.color: Theme.glassContainerBorder
         clip: true
 
         // ── Контент: два лоадера для crossfade ──────────────────────
+        // TODO: посмотреть, можно ли что-то сделать с StackView
         Loader {
             id: loaderA
             anchors.centerIn: parent
@@ -54,13 +56,16 @@ PanelWindow {
 
             onLoaded: {
                 if (!item) return
-                root.reposition(item.implicitWidth, item.implicitHeight)
-                background.implicitWidth = item.implicitWidth
-                background.implicitHeight = item.implicitHeight
-
+                root.updateGeometry(item)
                 fadeInA.start()
                 fadeOutB.start()
                 root.loaderAActive = true
+            }
+
+            Connections {
+                target: loaderA.item
+                function onImplicitWidthChanged() { root.updateGeometry(loaderA.item) }
+                function onImplicitHeightChanged() { root.updateGeometry(loaderA.item) }
             }
         }
 
@@ -71,13 +76,16 @@ PanelWindow {
 
             onLoaded: {
                 if (!item) return
-                root.reposition(item.implicitWidth, item.implicitHeight)
-                background.implicitWidth = item.implicitWidth
-                background.implicitHeight = item.implicitHeight
-
+                root.updateGeometry(item)
                 fadeInB.start()
                 fadeOutA.start()
                 root.loaderAActive = false
+            }
+
+            Connections {
+                target: loaderB.item
+                function onImplicitWidthChanged() { root.updateGeometry(loaderB.item) }
+                function onImplicitHeightChanged() { root.updateGeometry(loaderB.item) }
             }
         }
 
@@ -165,7 +173,6 @@ PanelWindow {
 
         currentComponent = component
 
-        // новый контент всегда грузим в НЕактивный лоадер
         if (loaderAActive) {
             loaderB.opacity = 0
             loaderB.sourceComponent = component
@@ -173,6 +180,14 @@ PanelWindow {
             loaderA.opacity = 0
             loaderA.sourceComponent = component
         }
+    }
+    function updateGeometry(item) {
+        if (!item) return
+        background.implicitWidth = item.implicitWidth
+        background.implicitHeight = item.implicitHeight
+        root.reposition(item.implicitWidth, item.implicitHeight)
+        // FIXME: reposition() императивно задает x/y вместо биндинга
+        // Должно стать вычисляемым свойством
     }
 
     function reposition(w, h) {

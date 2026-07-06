@@ -1,5 +1,5 @@
 import QtQuick
-
+// FIXME: плейсхолдер, заменить реальным
 Item {
     id: root
     implicitWidth: 100

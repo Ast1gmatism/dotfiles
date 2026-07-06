@@ -1,4 +1,3 @@
-// theme/Colors.qml
 pragma Singleton
 import Quickshell
 import Quickshell.Io

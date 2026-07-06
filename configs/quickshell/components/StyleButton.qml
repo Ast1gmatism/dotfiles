@@ -21,8 +21,8 @@ Item {
         anchors.fill: parent
         background: Item {}
         icon.color: Theme.foregroundColor
-        icon.width: 24
-        icon.height: 24
+        icon.width: Theme.widgetHeight
+        icon.height: Theme.widgetHeight
         onClicked: root.clicked()
     }
 }

@@ -6,6 +6,7 @@ import qs.theme
 
 Item {
     id: root
+    // FIXME: заглушка, дублирует иконку MenuWidget. Переработать в Audio Hub (визуализатор)
     implicitWidth: btn.width
     implicitHeight: btn.height
 
@@ -15,6 +16,6 @@ Item {
         iconSource: {
             return Theme.iconsPath + "cachyos.svg"
         }
-        onClicked: console.log("Under construction!")
+        onClicked: console.log("Under construction!") // TODO: подлючить AudioHub 
     }
 }

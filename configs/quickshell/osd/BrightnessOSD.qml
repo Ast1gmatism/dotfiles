@@ -4,7 +4,7 @@ import qs.theme
 Item {
     id: root
     property real value: 0
-    
+    // TODO: полный реворк
     implicitWidth: 100
     implicitHeight: 30
 

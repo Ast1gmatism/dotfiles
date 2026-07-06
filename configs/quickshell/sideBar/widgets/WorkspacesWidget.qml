@@ -16,7 +16,7 @@ Column {
             required property int index
             
             readonly property int workspaceId: index + 1
-            readonly property bool isActive: Hyprland.focusedWorkspace.id === workspaceId
+            readonly property bool isActive: Hyprland.focusedWorkspace?.id === workspaceId
             readonly property bool isHovered: root.hoveredId === workspaceId
             readonly property bool isEmpty: !Hyprland.workspaces.values.some(w => w.id === workspaceId)
 

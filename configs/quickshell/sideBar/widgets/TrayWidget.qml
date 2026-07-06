@@ -1,6 +1,8 @@
 import QtQuick
 import Quickshell.Services.SystemTray
+import Quickshell
 import qs.theme
+import qs.popups
 
 Column {
     id: root
@@ -19,27 +21,33 @@ Column {
             width: root.width
             height: 24
 
-            // Rectangle {
-            //     anchors.fill: parent
-            //     color: "red"
-            // }
+            Component {
+                id: trayMenuComponent
+                TrayMenu {
+                    menu: trayItem.modelData.menu
+                }
+            }
 
             Image {
                 anchors.centerIn: parent
-
                 width: 20
                 height: 20
-
                 source: trayItem.modelData.icon
-
                 sourceSize.width: 20
                 sourceSize.height: 20
             }
 
             MouseArea {
                 anchors.fill: parent
-
-                onClicked: trayItem.modelData.activate()
+                acceptedButtons: Qt.LeftButton | Qt.RightButton
+                onClicked: (mouse) => {
+                    if (mouse.button === Qt.LeftButton) {
+                        trayItem.modelData.activate()
+                    } else if (mouse.button === Qt.RightButton) {
+                        if (trayItem.modelData.hasMenu)
+                            mainPopup.show(trayMenuComponent, "left", "bottom", 10, 10, trayItem)
+                    }
+                }
             }
         }
     }

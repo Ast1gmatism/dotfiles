@@ -3,7 +3,7 @@ import qs.singletons
 // import qs.popups
 import qs.components
 import qs.theme
-
+// TODO: Wi-Fi попап
 Item {
     implicitWidth: btn.width
     implicitHeight: btn.height

@@ -43,8 +43,8 @@ Item {
                     fillGradient: LinearGradient {
                         x1: 0; y1: 0
                         x2: 0; y2: parent.height
-                        GradientStop { position: 0.0; color: Qt.alpha(Colors.palette.surface1, 0.55) }
-                        GradientStop { position: 1.0; color: Qt.alpha(Colors.palette.surface0, 0.40) }
+                        GradientStop { position: 0.0; color: Theme.glassGroupStart }
+                        GradientStop { position: 1.0; color: Theme.glassGroupEnd }
                     }
                     strokeColor: Theme.glassGroupBorder
                     strokeWidth: 1

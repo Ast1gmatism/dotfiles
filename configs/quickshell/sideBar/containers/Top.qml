@@ -62,6 +62,6 @@ Item {
                 WorkspacesWidget {}
             }
         }
-        AudioWidget {}
+        // AudioWidget {}
     }
 }
