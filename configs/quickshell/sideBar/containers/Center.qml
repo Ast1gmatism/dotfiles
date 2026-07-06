@@ -12,7 +12,6 @@ Item {
 
     Shape {
         preferredRendererType: Shape.CurveRenderer
-        anchors.fill: parent
 
         ShapePath {
             fillColor: Theme.glassContainer

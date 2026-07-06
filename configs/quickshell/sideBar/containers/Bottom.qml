@@ -12,7 +12,6 @@ Item {
     
     Shape {
         preferredRendererType: Shape.CurveRenderer
-        anchors.fill: parent
         ShapePath {
             startY: -r
             fillColor: Theme.glassContainer
@@ -30,7 +29,6 @@ Item {
         anchors.bottom: parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter
         spacing: 4
-       
         
         TrayWidget {}
         Item {
