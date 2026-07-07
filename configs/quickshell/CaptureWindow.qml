@@ -3,6 +3,9 @@ import QtQuick.Layouts
 import Quickshell
 import qs.theme
 
+// HACK: фича полностью заморожена
+// - вынести из корня проекта в capture/CaptureWindow.qml
+
 PanelWindow {
     id: root
     visible: false

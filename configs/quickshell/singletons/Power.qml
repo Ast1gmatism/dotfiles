@@ -115,6 +115,7 @@ Singleton {
     }
 
     // ── Redshift (hyprsunset) ────────────────────────────────
+     // TODO: полностью пересмотреть механику redshift, обратная связь в UI при падении демона
     property bool redshiftEnabled: false
     property int redshiftTemp: 3500
 

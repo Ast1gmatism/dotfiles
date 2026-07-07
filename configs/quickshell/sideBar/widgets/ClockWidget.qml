@@ -5,5 +5,5 @@ import qs.components
 StyleText {
     text: Qt.formatDateTime(Clock.time, "hh\nmm")
     fontWeight: Font.DemiBold
-    onClicked: console.log("Clock clicked")
+    onClicked: console.log("Clock clicked") // TODO: открыть центральный попап (календарь/дата/погода + вкладка таймеров)
 }

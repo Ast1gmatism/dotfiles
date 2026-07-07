@@ -2,6 +2,9 @@ import QtQuick
 import QtQuick.Controls
 import qs.theme
 
+// TODO: переделать в WidgetButton — забрать сюда повторяющийся паттерн
+// "Item + Component + onClicked mainPopup.show()", который сейчас продублирован
+// в VolumeWidget/PowerWidget/BluetoothWidget и т.д.
 Item {
     id: root
     

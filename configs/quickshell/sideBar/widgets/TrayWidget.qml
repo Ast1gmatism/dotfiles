@@ -44,6 +44,9 @@ Column {
                     if (mouse.button === Qt.LeftButton) {
                         trayItem.modelData.activate()
                     } else if (mouse.button === Qt.RightButton) {
+                        // FIXME: определиться с консистентностью — TrayWidget не использует
+                        // StyleButton/WidgetButton, т.к. нужна обработка правого клика.
+                        // Либо расширить WidgetButton под это, либо явно оставить TrayWidget особым случаем.
                         if (trayItem.modelData.hasMenu)
                             mainPopup.show(trayMenuComponent, "left", "bottom", 10, 10, trayItem)
                     }
