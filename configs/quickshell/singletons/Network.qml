@@ -31,7 +31,4 @@ Singleton {
     function stopScan() {
         if (_wifi) _wifi.scannerEnabled = false
     }
-    onSignalStrengthChanged: {
-        console.log(root.signalStrength)
-    }
 }

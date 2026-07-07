@@ -93,10 +93,7 @@ PanelWindow {
                 to: root.screen.height
                 duration: 200
                 easing.type: Easing.OutQuint
-                onStopped: {
-                    osdWrapper.destroy()
-                    console.log("OSD", Component, "destroyed")
-                }
+                onStopped: osdWrapper.destroy()
             }
 
             Behavior on x {
@@ -110,14 +107,10 @@ PanelWindow {
     }
     
     function handleOsdUpdate(type, value) {
-        console.log("OSD update:", type, value)
-        
         var idx = findOsdIndex(type)
         if (idx !== -1) {
-            console.log("Updating existing", type, "OSD")
             activeOsds[idx].obj.osdValue = value
         } else {
-            console.log("Creating new", type, "OSD")
             var obj = createOsd(type, value)
             activeOsds.push({ type: type, obj: obj })
             recalculatePositions()
