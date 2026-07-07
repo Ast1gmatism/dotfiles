@@ -11,7 +11,7 @@
 - [ ] PopupManager — нормальная поддержка мультимонитора ⚪
 - [ ] OSDWindow — нормальная поддержка мультимонитора ⚪
 - [x] Привязка Battery popup к UPower
-- [ ] Реорганизация файлов: `MainPopup` → `popups/`, `popups/content/` для контента попапов, единый нейминг корневых окон (SideBar/OSD/Capture/Popup) 🟢
+- [x] Реорганизация файлов: `MainPopup` → `popups/`, `popups/content/` для контента попапов, единый нейминг корневых окон (SideBar/OSD/Capture/Popup) 
 - [x] MainPopup: — замена системы из 9 точек
 - [x] MainPopup: переход `x`/`y` на реактивный binding вместо императивного пересчёта
 - [ ] MainPopup: добавить showAnchored для вызова попапа из точки на экране
@@ -26,7 +26,7 @@
 
 ### Доработка виджетов
 - [ ] Контекстное меню трея — подменю и чекбокс/радио-пункты 🟢
-- [ ] Network singleton — убрать протечку сырых объектов (`Networking.devices`/`dev.type`), выдавать готовое UI-состояние по аналогии с Power/Volume/Bluetooth 🟢
+- [x] Network singleton — убрать протечку сырых объектов (`Networking.devices`/`dev.type`), выдавать готовое UI-состояние по аналогии с Power/Volume/Bluetooth
 
 ### Внешний вид
 - [x] Морфинг контента при смене попапов
