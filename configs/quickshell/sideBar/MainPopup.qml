@@ -1,8 +1,7 @@
 import Quickshell
 import Quickshell.Hyprland
-import QtQuick.Effects
 import QtQuick
-import Quickshell.Wayland
+import QtQuick.Controls
 import qs.theme
 
 PanelWindow {
@@ -20,10 +19,8 @@ PanelWindow {
     exclusionMode: ExclusionMode.Ignore
 
     property var currentComponent: null
-    property bool loaderAActive: true
-
     property var anchorItem: null
-    property real gap: 8
+    property real gap: 10
 
     readonly property int fadeDuration: 100
 
@@ -43,19 +40,17 @@ PanelWindow {
         border.color: Theme.glassContainerBorder
         clip: true
 
-        readonly property var activeItem: loaderAActive ? loaderA.item : loaderB.item
-
-        implicitWidth: root.visible ? (activeItem?.implicitWidth ?? 0) : 0
-        implicitHeight: root.visible ? (activeItem?.implicitHeight ?? 0) : 0
+        implicitWidth: root.visible ? (stack.currentItem?.implicitWidth ?? 0) : 0
+        implicitHeight: root.visible ? (stack.currentItem?.implicitHeight ?? 0) : 0
 
         readonly property real startY: root.anchorItem ? root.getItemRect(root.anchorItem).y : 0
 
         x: root.gap
 
         y: {
-            if (!root.visible || !root.anchorItem || !activeItem) return startY
+            if (!root.visible || !root.anchorItem || !stack.currentItem) return startY
             var rect = root.getItemRect(root.anchorItem)
-            var h = activeItem.implicitHeight
+            var h = stack.currentItem.implicitHeight
             var centerY = rect.y + rect.height / 2 - h / 2
             var screenH = root.screen.height
             return Math.max(root.gap, Math.min(centerY, screenH - h - root.gap))
@@ -74,61 +69,26 @@ PanelWindow {
             NumberAnimation { duration: 400; easing.type: Easing.OutQuint }
         }
 
-        Loader {
-            id: loaderA
-            anchors.centerIn: parent
-            opacity: 1
+        StackView {
+            id: stack
+            anchors.fill: parent
 
-            onLoaded: {
-                if (!item) return
-                fadeInA.start()
-                fadeOutB.start()
-                root.loaderAActive = true
+            replaceEnter: Transition {
+                NumberAnimation {
+                    property: "opacity"
+                    from: 0; to: 1
+                    duration: root.fadeDuration
+                    easing.type: Easing.OutCubic
+                }
             }
-        }
-
-        Loader {
-            id: loaderB
-            anchors.centerIn: parent
-            opacity: 0
-
-            onLoaded: {
-                if (!item) return
-                fadeInB.start()
-                fadeOutA.start()
-                root.loaderAActive = false
+            replaceExit: Transition {
+                NumberAnimation {
+                    property: "opacity"
+                    from: 1; to: 0
+                    duration: root.fadeDuration
+                    easing.type: Easing.InCubic
+                }
             }
-        }
-
-        NumberAnimation {
-            id: fadeInA
-            target: loaderA; property: "opacity"
-            from: 0; to: 1
-            duration: root.fadeDuration
-            easing.type: Easing.OutCubic
-        }
-        NumberAnimation {
-            id: fadeOutA
-            target: loaderA; property: "opacity"
-            from: 1; to: 0
-            duration: root.fadeDuration
-            easing.type: Easing.InCubic
-            onStopped: loaderA.sourceComponent = null
-        }
-        NumberAnimation {
-            id: fadeInB
-            target: loaderB; property: "opacity"
-            from: 0; to: 1
-            duration: root.fadeDuration
-            easing.type: Easing.OutCubic
-        }
-        NumberAnimation {
-            id: fadeOutB
-            target: loaderB; property: "opacity"
-            from: 1; to: 0
-            duration: root.fadeDuration
-            easing.type: Easing.InCubic
-            onStopped: loaderB.sourceComponent = null
         }
     }
 
@@ -151,9 +111,7 @@ PanelWindow {
         root.visible = true
         Qt.callLater(() => background.forceActiveFocus())
 
-        var target = loaderAActive ? loaderB : loaderA
-        target.opacity = 0
-        target.sourceComponent = component
+        stack.push(component, StackView.Immediate)
     }
 
     function _switch(component, item, gapValue) {
@@ -161,17 +119,14 @@ PanelWindow {
         root.gap = gapValue ?? 8
         root.currentComponent = component
 
-        var target = loaderAActive ? loaderB : loaderA
-        target.opacity = 0
-        target.sourceComponent = component
+        stack.replace(component)
     }
 
     function _close() {
         root.visible = false
         root.currentComponent = null
         root.anchorItem = null
-        loaderA.sourceComponent = null
-        loaderB.sourceComponent = null
+        stack.clear(StackView.Immediate)
     }
 
     function getItemRect(item) {

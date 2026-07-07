@@ -17,7 +17,7 @@
 - [ ] MainPopup: добавить showAnchored для вызова попапа из точки на экране
 - [ ] Разрыв прямой связи попапов с `mainPopup` по id — сигнальный паттерн `closeRequested()` вместо ручного `mainPopup.close()` 🟢
 - [ ] `StyleButton` → `WidgetButton` — перенос структуры "Item + Component + onClicked show()" внутрь кнопки 🟢
-- [ ] Замена Loader A/B на StackView для crossfade 🟢
+- [x] Замена Loader A/B на StackView для crossfade 🟢
 
 #### Child → parent sizing
 - [ ] VolumePopup — implicitWidth/Height вывести из layout, а не хардкодить 🟢
