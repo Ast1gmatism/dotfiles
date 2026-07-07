@@ -25,7 +25,7 @@ Item {
             if (p <= 90) return Theme.iconsPath + "battery/high.svg"
             return Theme.iconsPath + "battery/full.svg"
         }
-        onClicked: mainPopup.showAt(powerContent, root, 10)
+        onClicked: mainPopup.toggle(powerContent, root, 10)
     }
 
     Rectangle {

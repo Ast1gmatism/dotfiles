@@ -22,13 +22,8 @@ PanelWindow {
     property var currentComponent: null
     property bool loaderAActive: true
 
-    // ── Состояние привязки к виджету ─────────────────────────
     property var anchorItem: null
-    property string placement: "bottom"   // top | bottom | left | right
-    property string alignment: "start"    // start | center | end
     property real gap: 8
-
-    property bool animEnabled: true
 
     readonly property int fadeDuration: 100
 
@@ -36,7 +31,7 @@ PanelWindow {
         name: "popupEscape"
         description: "Close popup"
         onPressed: {
-            if (root.visible) root.close()
+            if (root.visible) root._close()
         }
     }
 
@@ -48,8 +43,37 @@ PanelWindow {
         border.color: Theme.glassContainerBorder
         clip: true
 
-        // ── Контент: два лоадера для crossfade ──────────────────────
-        // TODO: посмотреть, можно ли что-то сделать с StackView
+        readonly property var activeItem: loaderAActive ? loaderA.item : loaderB.item
+
+        implicitWidth: root.visible ? (activeItem?.implicitWidth ?? 0) : 0
+        implicitHeight: root.visible ? (activeItem?.implicitHeight ?? 0) : 0
+
+        readonly property real startY: root.anchorItem ? root.getItemRect(root.anchorItem).y : 0
+
+        x: root.gap
+
+        y: {
+            if (!root.visible || !root.anchorItem || !activeItem) return startY
+            var rect = root.getItemRect(root.anchorItem)
+            var h = activeItem.implicitHeight
+            var centerY = rect.y + rect.height / 2 - h / 2
+            var screenH = root.screen.height
+            return Math.max(root.gap, Math.min(centerY, screenH - h - root.gap))
+        }
+
+        Behavior on implicitWidth {
+            enabled: root.visible
+            NumberAnimation { duration: 400; easing.type: Easing.OutQuint }
+        }
+        Behavior on implicitHeight {
+            enabled: root.visible
+            NumberAnimation { duration: 400; easing.type: Easing.OutQuint }
+        }
+        Behavior on y {
+            enabled: root.visible
+            NumberAnimation { duration: 400; easing.type: Easing.OutQuint }
+        }
+
         Loader {
             id: loaderA
             anchors.centerIn: parent
@@ -57,16 +81,9 @@ PanelWindow {
 
             onLoaded: {
                 if (!item) return
-                root.updateGeometry(item)
                 fadeInA.start()
                 fadeOutB.start()
                 root.loaderAActive = true
-            }
-
-            Connections {
-                target: loaderA.item
-                function onImplicitWidthChanged() { root.updateGeometry(loaderA.item) }
-                function onImplicitHeightChanged() { root.updateGeometry(loaderA.item) }
             }
         }
 
@@ -77,20 +94,12 @@ PanelWindow {
 
             onLoaded: {
                 if (!item) return
-                root.updateGeometry(item)
                 fadeInB.start()
                 fadeOutA.start()
                 root.loaderAActive = false
             }
-
-            Connections {
-                target: loaderB.item
-                function onImplicitWidthChanged() { root.updateGeometry(loaderB.item) }
-                function onImplicitHeightChanged() { root.updateGeometry(loaderB.item) }
-            }
         }
 
-        // ── Анимации входа/выхода, каждая привязана к своему лоадеру ──
         NumberAnimation {
             id: fadeInA
             target: loaderA; property: "opacity"
@@ -121,76 +130,48 @@ PanelWindow {
             easing.type: Easing.InCubic
             onStopped: loaderB.sourceComponent = null
         }
-
-        // ── Морф размера/позиции окна ──────────────
-        Behavior on implicitHeight {
-            enabled: root.animEnabled
-            NumberAnimation { duration: 400; easing.type: Easing.OutQuint }
-        }
-        Behavior on implicitWidth {
-            enabled: root.animEnabled
-            NumberAnimation { duration: 400; easing.type: Easing.OutQuint }
-        }
-        Behavior on x {
-            enabled: root.animEnabled
-            NumberAnimation { duration: 400; easing.type: Easing.OutQuint }
-        }
-        Behavior on y {
-            enabled: root.animEnabled
-            NumberAnimation { duration: 400; easing.type: Easing.OutQuint }
-        }
     }
 
     // ── Публичный API ──────────────────────────────────────────
-    function showAt(component, item, placement, alignment, gap) {
-        root.anchorItem = item
-        root.gap = gap ?? 8
-
-        if (currentComponent === component) {
-            close()
-            return
-        }
-
+    function toggle(component, item, gapValue) {
         if (!root.visible) {
-            var rect = getItemRect(item)
-            var startX = rect.x + rect.width / 2
-            var startY = rect.y + rect.height / 2
-
-            root.animEnabled = false
-            background.x = startX
-            background.y = startY
-            background.implicitWidth = 0
-            background.implicitHeight = 0
-            root.visible = true
-            root.animEnabled = true
-            Qt.callLater(() => background.forceActiveFocus())
-        }
-
-        currentComponent = component
-
-        if (loaderAActive) {
-            loaderB.opacity = 0
-            loaderB.sourceComponent = component
+            _open(component, item, gapValue)
+        } else if (currentComponent === component) {
+            _close()
         } else {
-            loaderA.opacity = 0
-            loaderA.sourceComponent = component
+            _switch(component, item, gapValue)
         }
     }
 
-    function reposition(w, h) {
-        if (!root.anchorItem) return
+    function _open(component, item, gapValue) {
+        root.anchorItem = item
+        root.gap = gapValue ?? 8
+        root.currentComponent = component
 
-        var rect = getItemRect(root.anchorItem)
+        root.visible = true
+        Qt.callLater(() => background.forceActiveFocus())
 
-        var x = root.gap
-        var y = rect.y + rect.height / 2 - h / 2
+        var target = loaderAActive ? loaderB : loaderA
+        target.opacity = 0
+        target.sourceComponent = component
+    }
 
-        // Прижимаем к краям экрана, если вылезает
-        var screenH = root.screen.height
-        y = Math.max(root.gap, Math.min(y, screenH - h - root.gap))
+    function _switch(component, item, gapValue) {
+        root.anchorItem = item
+        root.gap = gapValue ?? 8
+        root.currentComponent = component
 
-        background.x = x
-        background.y = y
+        var target = loaderAActive ? loaderB : loaderA
+        target.opacity = 0
+        target.sourceComponent = component
+    }
+
+    function _close() {
+        root.visible = false
+        root.currentComponent = null
+        root.anchorItem = null
+        loaderA.sourceComponent = null
+        loaderB.sourceComponent = null
     }
 
     function getItemRect(item) {
@@ -199,21 +180,5 @@ PanelWindow {
             y: pos.y,
             height: item.height
         }
-    }
-
-    function updateGeometry(item) {
-        if (!item) return
-        background.implicitWidth = item.implicitWidth
-        background.implicitHeight = item.implicitHeight
-        root.reposition(item.implicitWidth, item.implicitHeight)
-        // FIXME: реализовать через реактивный binding вместо императивного вызова (см. TODO)
-    }
-
-    function close() {
-        root.visible = false
-        currentComponent = null
-        anchorItem = null
-        loaderA.sourceComponent = null
-        loaderB.sourceComponent = null
     }
 }

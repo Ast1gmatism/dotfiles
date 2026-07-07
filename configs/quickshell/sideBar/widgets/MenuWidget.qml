@@ -24,6 +24,6 @@ Item {
         id: mouseArea
         anchors.fill: parent
         hoverEnabled: true
-        onClicked: mainPopup.showAt(controlContent, root, 10)
+        onClicked: mainPopup.toggle(controlContent, root, 10)
     }
 }

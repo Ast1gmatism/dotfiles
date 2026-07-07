@@ -22,6 +22,6 @@ Item {
             if (Bluetooth.isConnected) return Theme.iconsPath + "bluetooth/connected.svg"
             return Theme.iconsPath + "bluetooth/on.svg"
         }
-        onClicked: mainPopup.showAt(bluetoothContent, root, 10)
+        onClicked: mainPopup.toggle(bluetoothContent, root, 10)
     }
 }

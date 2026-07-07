@@ -48,7 +48,7 @@ Column {
                         // StyleButton/WidgetButton, т.к. нужна обработка правого клика.
                         // Либо расширить WidgetButton под это, либо явно оставить TrayWidget особым случаем.
                         if (trayItem.modelData.hasMenu)
-                            mainPopup.showAt(trayMenuComponent, trayItem, 10)
+                            mainPopup.toggle(trayMenuComponent, trayItem, 10)
                     }
                 }
             }

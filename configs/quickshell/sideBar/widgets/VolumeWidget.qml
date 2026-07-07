@@ -23,6 +23,6 @@ Item {
             if (Volume.volume <= 50) return Theme.iconsPath + "volume/low.svg"
             return Theme.iconsPath + "volume/high.svg"
         }
-        onClicked: mainPopup.showAt(volumeContent, root, 10)
+        onClicked: mainPopup.toggle(volumeContent, root, 10)
     }
 }

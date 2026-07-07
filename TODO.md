@@ -13,7 +13,7 @@
 - [x] Привязка Battery popup к UPower
 - [ ] Реорганизация файлов: `MainPopup` → `popups/`, `popups/content/` для контента попапов, единый нейминг корневых окон (SideBar/OSD/Capture/Popup) 🟢
 - [x] MainPopup: — замена системы из 9 точек
-- [ ] MainPopup: переход `x`/`y` на реактивный binding вместо императивного пересчёта 🟢 ❗
+- [x] MainPopup: переход `x`/`y` на реактивный binding вместо императивного пересчёта 🟢 ❗
 - [ ] MainPopup: добавить showAnchored для вызова попапа из точки на экране
 - [ ] Разрыв прямой связи попапов с `mainPopup` по id — сигнальный паттерн `closeRequested()` вместо ручного `mainPopup.close()` 🟢
 - [ ] `StyleButton` → `WidgetButton` — перенос структуры "Item + Component + onClicked show()" внутрь кнопки 🟢

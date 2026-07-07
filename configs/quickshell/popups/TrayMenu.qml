@@ -70,7 +70,7 @@ Column {
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
                     entryDelegate.entry.triggered()
-                    mainPopup.close()
+                    mainPopup._close()
                     // FIXME: прямой референс по id, заменить на функцию
                 }
             }
