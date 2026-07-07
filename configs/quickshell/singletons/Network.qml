@@ -5,20 +5,33 @@ import Quickshell.Networking
 Singleton {
     id: root
 
-    property bool isEnabled: Networking.wifiEnabled
+    // ──────────────────────────────────────────────────────────
+    readonly property var _wifi: Networking.devices.values.find(
+        dev => dev.type === DeviceType.Wifi
+    ) ?? null
 
-    property var wifi: {
-        return Networking.devices.values.find(dev => dev.type === 1)
-        // FIXME: dev.type === 1 магическое число, заменить на enum
+    readonly property var _network: _wifi?.networks?.values?.find(
+        net => net.connected
+    ) ?? null
+
+    // ── Публичный UI-контракт ─────────────────────────────────
+    readonly property bool hasAdapter:  _wifi !== null
+    readonly property bool isEnabled:   Networking.wifiEnabled
+    readonly property bool isConnected: _network !== null
+    readonly property bool isScanning:  _wifi?.scannerEnabled ?? false
+
+    readonly property string networkName:    _network?.name           ?? ""
+    readonly property real   signalStrength: _network?.signalStrength ?? 0.0
+
+    // ── Управление сканером ───────────────────────────────────
+    function startScan() {
+        if (_wifi) _wifi.scannerEnabled = true
     }
 
-    // FIXME: leaks raw Networking objects (wifi, network) to widgets instead of
-    // exposing ready-to-use UI state, unlike Power/Volume/Bluetooth singletons.
-    // Widget layer shouldn't need to know internal structure of Networking API.
-    property var network: {
-        if (!wifi?.networks) return null
-        return wifi.networks.values.find(net => net.connected)
+    function stopScan() {
+        if (_wifi) _wifi.scannerEnabled = false
     }
-
-    property real signalStrength: network?.signalStrength ?? 0
+    onSignalStrengthChanged: {
+        console.log(root.signalStrength)
+    }
 }
