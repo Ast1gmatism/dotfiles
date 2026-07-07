@@ -22,11 +22,12 @@ PanelWindow {
     property var currentComponent: null
     property bool loaderAActive: true
 
-    property string hAlign: "left"
-    property string vAlign: "bottom"
-    property real offsetX: 0
-    property real offsetY: 0
-    // TODO: заменить 9-позиционную систему на гибкое позиционирование
+    // ── Состояние привязки к виджету ─────────────────────────
+    property var anchorItem: null
+    property string placement: "bottom"   // top | bottom | left | right
+    property string alignment: "start"    // start | center | end
+    property real gap: 8
+
     property bool animEnabled: true
 
     readonly property int fadeDuration: 100
@@ -121,7 +122,7 @@ PanelWindow {
             onStopped: loaderB.sourceComponent = null
         }
 
-        // ── Морф размера/позиции окна (без изменений) ──────────────
+        // ── Морф размера/позиции окна ──────────────
         Behavior on implicitHeight {
             enabled: root.animEnabled
             NumberAnimation { duration: 400; easing.type: Easing.OutQuint }
@@ -140,11 +141,10 @@ PanelWindow {
         }
     }
 
-    function show(component, posH, posV, offX, offY, triggerItem) {
-        root.hAlign = posH
-        root.vAlign = posV
-        root.offsetX = offX
-        root.offsetY = offY
+    // ── Публичный API ──────────────────────────────────────────
+    function showAt(component, item, placement, alignment, gap) {
+        root.anchorItem = item
+        root.gap = gap ?? 8
 
         if (currentComponent === component) {
             close()
@@ -152,14 +152,9 @@ PanelWindow {
         }
 
         if (!root.visible) {
-            var startX = 0
-            var startY = 0
-
-            if (triggerItem) {
-                var pos = triggerItem.mapToItem(null, triggerItem.width / 2, triggerItem.height / 2)
-                startX = pos.x
-                startY = pos.y
-            }
+            var rect = getItemRect(item)
+            var startX = rect.x + rect.width / 2
+            var startY = rect.y + rect.height / 2
 
             root.animEnabled = false
             background.x = startX
@@ -181,36 +176,43 @@ PanelWindow {
             loaderA.sourceComponent = component
         }
     }
+
+    function reposition(w, h) {
+        if (!root.anchorItem) return
+
+        var rect = getItemRect(root.anchorItem)
+
+        var x = root.gap
+        var y = rect.y + rect.height / 2 - h / 2
+
+        // Прижимаем к краям экрана, если вылезает
+        var screenH = root.screen.height
+        y = Math.max(root.gap, Math.min(y, screenH - h - root.gap))
+
+        background.x = x
+        background.y = y
+    }
+
+    function getItemRect(item) {
+        var pos = item.mapToItem(null, 0, 0)
+        return {
+            y: pos.y,
+            height: item.height
+        }
+    }
+
     function updateGeometry(item) {
         if (!item) return
         background.implicitWidth = item.implicitWidth
         background.implicitHeight = item.implicitHeight
         root.reposition(item.implicitWidth, item.implicitHeight)
-        // FIXME: reposition() императивно задает x/y вместо биндинга
-        // Должно стать вычисляемым свойством
-    }
-
-    function reposition(w, h) {
-        if (hAlign === "left") {
-            background.x = offsetX
-        } else if (hAlign === "center") {
-            background.x = (root.screen.width - root.margins.left - w) / 2 + offsetX
-        } else if (hAlign === "right") {
-            background.x = root.screen.width - root.margins.left - w - offsetX
-        }
-
-        if (vAlign === "top") {
-            background.y = offsetY
-        } else if (vAlign === "center") {
-            background.y = (root.screen.height - h) / 2 + offsetY
-        } else if (vAlign === "bottom") {
-            background.y = root.screen.height - h - offsetY
-        }
+        // FIXME: реализовать через реактивный binding вместо императивного вызова (см. TODO)
     }
 
     function close() {
         root.visible = false
         currentComponent = null
+        anchorItem = null
         loaderA.sourceComponent = null
         loaderB.sourceComponent = null
     }
