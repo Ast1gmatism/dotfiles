@@ -3,7 +3,6 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import qs.theme
 import qs.singletons
-import qs.components
 
 Item {
     id: root
@@ -32,6 +31,26 @@ Item {
     readonly property real columnSpacing: 12   // между виджетами внутри одной колонки
     readonly property real sectionRadius: 12
 
+    // ── Параметры дуги батареи ─────────────────────────────────
+    readonly property real ringThickness: 10
+    readonly property real ringGapDegrees: 60
+    readonly property int ringSegments: 48
+
+    function lerpColor(c1, c2, t) {
+        return Qt.rgba(
+            c1.r + (c2.r - c1.r) * t,
+            c1.g + (c2.g - c1.g) * t,
+            c1.b + (c2.b - c1.b) * t,
+            c1.a + (c2.a - c1.a) * t
+        )
+    }
+
+    function ringColorAt(t) {
+        return t < 0.5
+            ? lerpColor(Theme.batteryGradientStart, Theme.batteryGradientMid, t / 0.5)
+            : lerpColor(Theme.batteryGradientMid, Theme.batteryGradientStart, (t - 0.5) / 0.5)
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     RowLayout {
         id: mainRow
@@ -55,16 +74,68 @@ Item {
                 anchors.centerIn: parent
                 spacing: root.columnSpacing
 
-                BatteryRing {
+                // ── Круговой индикатор батареи ───────────────────────────────
+                Item {
                     id: chargeRing
                     Layout.preferredWidth: root.gaugeSize
                     Layout.preferredHeight: root.gaugeSize
                     Layout.alignment: Qt.AlignHCenter
 
-                    value: Power.batteryLevel
-                    gradientStart: Theme.batteryGradientStart
-                    gradientMid:   Theme.batteryGradientMid
-                    gradientEnd:   Theme.batteryGradientStart
+                    readonly property real arcRadius: width / 2 - root.ringThickness / 2
+                    readonly property real sweepDegrees: 360 - root.ringGapDegrees
+                    readonly property real startAngle: (90 + root.ringGapDegrees / 2) * Math.PI / 180
+                    readonly property real sweepRad: sweepDegrees * Math.PI / 180
+
+                    Canvas {
+                        id: trackCanvas
+                        anchors.fill: parent
+                        onPaint: {
+                            const ctx = getContext("2d")
+                            ctx.reset()
+                            ctx.lineWidth = root.ringThickness
+                            ctx.lineCap = "round"
+                            ctx.strokeStyle = Qt.rgba(205/255, 214/255, 244/255, 0.1)
+                            ctx.beginPath()
+                            ctx.arc(width / 2, height / 2, chargeRing.arcRadius,
+                                    chargeRing.startAngle, chargeRing.startAngle + chargeRing.sweepRad)
+                            ctx.stroke()
+                        }
+                    }
+
+                    Canvas {
+                        id: fillCanvas
+                        anchors.fill: parent
+
+                        Connections {
+                            target: Power
+                            function onBatteryLevelChanged() { fillCanvas.requestPaint() }
+                        }
+
+                        onPaint: {
+                            const ctx = getContext("2d")
+                            ctx.reset()
+
+                            const fillSweep = chargeRing.sweepRad * (Power.batteryLevel / 100)
+                            if (fillSweep <= 0) return
+
+                            const segAngle = fillSweep / root.ringSegments
+                            const overlap = segAngle * 0.15
+
+                            for (let i = 0; i < root.ringSegments; i++) {
+                                const t0 = i / root.ringSegments
+                                const t1 = (i + 1) / root.ringSegments
+                                const a0 = chargeRing.startAngle + segAngle * i - (i > 0 ? overlap : 0)
+                                const a1 = chargeRing.startAngle + segAngle * (i + 1) + (i < root.ringSegments - 1 ? overlap : 0)
+
+                                ctx.strokeStyle = root.ringColorAt((t0 + t1) / 2)
+                                ctx.lineWidth = root.ringThickness
+                                ctx.lineCap = (i === 0 || i === root.ringSegments - 1) ? "round" : "butt"
+                                ctx.beginPath()
+                                ctx.arc(width / 2, height / 2, chargeRing.arcRadius, a0, a1)
+                                ctx.stroke()
+                            }
+                        }
+                    }
 
                     Text {
                         id: percentageText
