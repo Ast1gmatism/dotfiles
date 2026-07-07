@@ -1,6 +1,5 @@
 import QtQuick
 import qs.singletons
-import qs.popups
 import qs.components
 import qs.theme
 

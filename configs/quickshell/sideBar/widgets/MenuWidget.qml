@@ -1,6 +1,6 @@
 import QtQuick
 import qs.theme
-import qs.popups
+import qs.popups.content
 
 Item {
     id: root

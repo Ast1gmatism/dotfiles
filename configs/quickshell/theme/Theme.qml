@@ -45,5 +45,5 @@ Singleton {
     readonly property int popupBorderWidth: 1
     readonly property string fontFamily: "JetBrainsMono Nerd Font"
     readonly property int fontSize: 14
-    readonly property string iconsPath: Qt.resolvedUrl("../icons/")
+    readonly property string iconsPath: Qt.resolvedUrl("icons/")
 }

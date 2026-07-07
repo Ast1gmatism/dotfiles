@@ -25,8 +25,8 @@ PanelWindow {
 
     // Конфигурация всех типов OSD в одном месте
     readonly property var osdConfigs: ({
-        "brightness": { singleton: Power, property: "brightness", contentFile: "BrightnessOSD.qml" },
-        "volume": { singleton: Volume, property: "volume", contentFile: "TestOSD.qml" }
+        "brightness": { singleton: Power, property: "brightness", contentFile: "content/BrightnessOSD.qml" },
+        "volume": { singleton: Volume, property: "volume", contentFile: "content/TestOSD.qml" }
         // FIXME: заменить на нормальный VolumeOSD
     })
     

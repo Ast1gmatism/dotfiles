@@ -2,7 +2,7 @@ import QtQuick
 import Quickshell.Services.SystemTray
 import Quickshell
 import qs.theme
-import qs.popups
+import qs.popups.content
 
 Column {
     id: root

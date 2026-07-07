@@ -2,6 +2,7 @@ import Quickshell
 import QtQuick
 import qs.sideBar.containers
 import qs.theme
+import qs.popups
 
 Variants {
     model: Quickshell.screens
