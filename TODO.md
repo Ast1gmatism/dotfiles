@@ -109,7 +109,7 @@
 ---
 
 ## Hyprland
-- [ ] Разбить lua на модули (keybinds, rules, startup...) 🟢
+- [x] Разбить lua на модули (keybinds, rules, startup...)
 - [ ] Парсинг настроек через hyprctl -j (нужен вывод — см. Control Center) 🟢
 - [ ] Пресеты окон ⚪
 
