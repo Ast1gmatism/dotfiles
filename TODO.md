@@ -110,8 +110,9 @@
 
 ## SDDM / Lockscreen
 - [ ] Runtime-настройки в state/theme.json 🟢
+- [x] Смена обоев через .sh
 - [ ] Смена обоев через QuickShell 🟢
-- [ ] Смена цветов через QuickShell ⚪
+- [x] Смена цветов через ~~QuickShell~~ Python скрипт
 - [ ] Fallback для background 🟢
 
 ---
