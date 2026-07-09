@@ -22,20 +22,20 @@ Singleton {
     readonly property color errorColor:   Colors.palette.red
 
     // ── Роли: акценты ──────────────────────────────────────
-    readonly property color accentColor: Colors.palette.lavender
+    readonly property color accentColor: Colors.palette.accent1
 
     // ── Роли: заливки состояний UI ─────────────────────────
     readonly property color subtleFillColor:      Qt.alpha(Colors.palette.text, 0.06)
     readonly property color hoverFillColor:       Qt.alpha(Colors.palette.text, 0.10)
     readonly property color highlightBorderColor: Qt.alpha(Colors.palette.text, 0.15)
-    readonly property color activeFillColor:      Qt.alpha(Colors.palette.lavender, 0.16)
+    readonly property color activeFillColor:      Qt.alpha(Colors.palette.accent1, 0.16)
 
     // ── Роли: виджет-специфичные ────────────────────────────
-    readonly property color batteryGradientStart: Colors.palette.mauve
-    readonly property color batteryGradientMid:   Colors.palette.pink
+    readonly property color batteryGradientStart: Colors.palette.accent2
+    readonly property color batteryGradientMid:   Colors.palette.accent3
     readonly property color brightnessColor:      Colors.palette.yellow
     readonly property color redshiftColor:        Colors.palette.peach
-    readonly property color volumeColor:          Colors.palette.blue
+    readonly property color volumeColor:          Colors.palette.accent1
 
     // ── Размеры, шрифты ──────────────────────────────────────
     readonly property int sideBarWidth: 40
