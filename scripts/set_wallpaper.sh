@@ -7,18 +7,27 @@ DOTFILES_ROOT="$(dirname "$SCRIPT_DIR")"
 HYPRPAPER_CONF="$DOTFILES_ROOT/configs/hypr/hyprpaper.conf"
 COLORS_JSON="$DOTFILES_ROOT/configs/quickshell/theme/colors.json"
 
-# Проверки
 if [[ ! -f "$WALLPAPER" ]]; then
     echo "❌ Файл не найден: $WALLPAPER" >&2
     exit 1
 fi
 
-# 1. Обновляем hyprpaper.conf (меняем строку wallpaper)
-sed -i "s|^wallpaper = ,.*|wallpaper = ,$WALLPAPER|" "$HYPRPAPER_CONF"
+WALLPAPER="$(realpath "$WALLPAPER")"
 
-# 2. Применяем через hyprctl (если hyprland запущен)
+# 1. Обновляем строку path внутри секции wallpaper { ... }
+sed -i "s|^\(\s*path\s*=\s*\).*|\1$WALLPAPER|" "$HYPRPAPER_CONF"
+
+# 2. Применяем через hyprctl (если hyprland запущен и hyprpaper активен)
 if command -v hyprctl &>/dev/null && hyprctl monitors &>/dev/null 2>&1; then
-    hyprctl hyprpaper wallpaper ",$WALLPAPER"
+    MONITOR=$(grep -oP '(?<=monitor\s=\s).*' "$HYPRPAPER_CONF" | head -1 | xargs)
+    FIT_MODE=$(grep -oP '(?<=fit_mode\s=\s).*' "$HYPRPAPER_CONF" | head -1 | xargs)
+    
+    # Формат: 'monitor,path,fit_mode' — fit_mode опциональный
+    if hyprctl hyprpaper wallpaper "${MONITOR},${WALLPAPER},${FIT_MODE}" 2>/dev/null; then
+        echo "✓ Обои применены на лету"
+    else
+        echo "⚠ Не удалось применить обои на лету (перезапусти hyprpaper)"
+    fi
 fi
 
 # 3. Генерим палитру
