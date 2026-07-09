@@ -44,6 +44,10 @@ Singleton {
         property color subtext1: "#b8b8b8"
         property color subtext0: "#909090"
 
+        property color accent1:  "#d97878"
+        property color accent2:  "#8fd978"
+        property color accent3:  "#7898d9"
+
         property color red:      "#d97878"
         property color peach:    "#d9a878"
         property color yellow:   "#d9d178"
@@ -52,6 +56,5 @@ Singleton {
         property color blue:     "#7898d9"
         property color mauve:    "#a878d9"
         property color pink:     "#d978c0"
-        property color lavender: "#9a9ad9"
     }
 }
