@@ -22,6 +22,9 @@ Scope {
         component: PanelWindow {
             id: win
 
+            readonly property string layerNamespace: "capture-test"
+
+
             function buildCommand(geom) {
                 var timestamp = new Date().toISOString()
                     .replace("T", "_")
@@ -46,16 +49,21 @@ Scope {
             }
 
             function captureRegion(x, y, w, h) {
-                var geomRaw = x + "," + y + " " + w + "x" + h  // чистая геометрия
+                if (w < 1 || h < 1) {
+                    console.warn("Invalid selection: width/height < 1")
+                    return
+                }
+                var geomRaw = Math.round(x) + "," + Math.round(y) + " " +
+                              Math.round(w) + "x" + Math.round(h)
                 var scriptPath = Qt.resolvedUrl("capture.sh").toString().replace("file://", "")
-                
-                Quickshell.execDetached([scriptPath, geomRaw, notch.destination])
+
+                Quickshell.execDetached([scriptPath, geomRaw, notch.destination, win.layerNamespace])
                 root.active = false
             }
 
             function captureFullscreen() {
                 var scriptPath = Qt.resolvedUrl("capture.sh").toString().replace("file://", "")
-                Quickshell.execDetached([scriptPath, "", notch.destination])
+                Quickshell.execDetached([scriptPath, "", notch.destination, win.layerNamespace])
                 root.active = false
             }
 
@@ -65,7 +73,7 @@ Scope {
             WlrLayershell.layer: WlrLayer.Overlay
             WlrLayershell.exclusionMode: ExclusionMode.Ignore
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
-            WlrLayershell.namespace: "capture-test"
+            WlrLayershell.namespace: win.layerNamespace
 
             focusable: true
 
@@ -96,19 +104,22 @@ Scope {
 
                 Rectangle {
                     anchors.fill: parent
-                    color: Qt.rgba(0, 0, 0, 0.5)
+                    color: "black"
+                    opacity: 0.4
                     visible: !overlayRoot.hasSelection
                 }
 
                 Rectangle {
-                    color: Qt.rgba(0, 0, 0, 0.5)
+                    color: "black"
+                    opacity: 0.4
                     x: 0; y: 0
                     width: parent.width
                     height: overlayRoot.selY
                     visible: overlayRoot.hasSelection
                 }
                 Rectangle {
-                    color: Qt.rgba(0, 0, 0, 0.5)
+                    color: "black"
+                    opacity: 0.4
                     x: 0
                     y: overlayRoot.selY + overlayRoot.selH
                     width: parent.width
@@ -116,7 +127,8 @@ Scope {
                     visible: overlayRoot.hasSelection
                 }
                 Rectangle {
-                    color: Qt.rgba(0, 0, 0, 0.5)
+                    color: "black"
+                    opacity: 0.4
                     x: 0
                     y: overlayRoot.selY
                     width: overlayRoot.selX
@@ -124,7 +136,8 @@ Scope {
                     visible: overlayRoot.hasSelection
                 }
                 Rectangle {
-                    color: Qt.rgba(0, 0, 0, 0.5)
+                    color: "black"
+                    opacity: 0.4
                     x: overlayRoot.selX + overlayRoot.selW
                     y: overlayRoot.selY
                     width: parent.width - x
@@ -191,8 +204,9 @@ Scope {
 
             CapNotch {
                 id: notch
-                anchors.top: parent.top
                 anchors.horizontalCenter: parent.horizontalCenter
+
+                collapsed: overlayRoot.selecting
 
                 onCloseRequested: root.active = false
                 onCaptureFullscreenRequested: win.captureFullscreen()

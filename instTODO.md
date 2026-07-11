@@ -17,6 +17,16 @@
 - [ ] Enable базовых сервисов (NetworkManager, bluetooth, pipewire/wireplumber) 🟢
 - [ ] Финальное сообщение: что установлено / что зафейлилось / что делать дальше 🟢
 
+#### Необходимые зависимости:
+- grim
+- wl-clipboard
+- jq
+- notify-send
+- mako
+- quickshell
+- hyprland
+
+
 ### install.sh (пост-MVP)
 
 #### Пакеты и железо
