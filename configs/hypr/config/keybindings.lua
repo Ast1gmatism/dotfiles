@@ -12,8 +12,7 @@ hl.bind(mainMod .. " + A", hl.dsp.exec_cmd("pkill wofi || wofi"))
 hl.bind(mainMod .. " + C", hl.dsp.window.close())
 hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("wlogout"))
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
-hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
-hl.bind("Escape", hl.dsp.global("quickshell:popupEscape"))
+hl.bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd("qs ipc call screen capture"))
 
 -- Switch workspaces with mainMod + [0-9]
 -- Move active window to a workspace with mainMod + SHIFT + [0-9]

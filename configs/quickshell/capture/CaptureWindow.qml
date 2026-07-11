@@ -1,229 +1,219 @@
-import QtQuick
-import QtQuick.Layouts
 import Quickshell
-import qs.theme
+import Quickshell.Hyprland
+import Quickshell.Io
+import QtQuick
+import QtQuick.Controls
+import QtCore
+import Quickshell.Wayland
 
-// HACK: фича полностью заморожена
-// - вынести из корня проекта в capture/CaptureWindow.qml
-
-PanelWindow {
+Scope {
     id: root
-    visible: false
-    color: "transparent"
-    
-    // Полноэкранное окно для затемнения
-    anchors {
-        top: true
-        bottom: true
-        left: true
-        right: true
-    }
-    
-    exclusionMode: ExclusionMode.Ignore
-    
-    // === СОСТОЯНИЯ ===
-    property bool isVideo: false
-    property bool isArea: true
-    property bool saveToFile: true
-    property string videoFormat: "mp4"
-    
-    // === КОМПОНЕНТ: Кнопка с иконкой ===
-    component IconButton: Item {
-        property string icon: ""
-        property bool active: false
-        property color activeColor: Theme.successColor
-        property color defaultColor: Qt.alpha(Theme.foregroundColor, 0.05)
-        signal clicked()
-        
-        width: 40
-        height: 40
-        
-        Rectangle {
-            anchors.fill: parent
-            color: active ? Qt.alpha(activeColor, 0.25) : defaultColor
-            radius: 8
-            border.color: active ? activeColor : "transparent"
-            border.width: 1
-            
-            Behavior on color { ColorAnimation { duration: 100 } }
-        }
-        
-        Text {
-            anchors.centerIn: parent
-            text: icon
-            font.pixelSize: 20
-            color: Theme.foregroundColor
-        }
-        
-        MouseArea {
-            anchors.fill: parent
-            onClicked: parent.clicked()
-            cursorShape: Qt.PointingHandCursor
+    property bool active: false
+
+    IpcHandler {
+        target: "screen"
+        function capture() {
+            root.active = !root.active
         }
     }
-    
-    // === ЗАТЕМНЕНИЕ ===
-    Rectangle {
-        anchors.fill: parent
-        color: Qt.rgba(0, 0, 0, 0.45)
-        
-        MouseArea {
-            anchors.fill: parent
-            onClicked: root.visible = false
-        }
-    }
-    
-    // === ЧЕЛКА (ПАНЕЛЬ) ===
-    Rectangle {
-        id: chelka
-        anchors.top: parent.top
-        anchors.topMargin: 24
-        anchors.horizontalCenter: parent.horizontalCenter
-        height: 72
-        width: rowLayout.width + 32
-        color: Theme.backgroundColor
-        radius: 16
-        border.color: Qt.alpha(Theme.foregroundColor, 0.1)
-        border.width: 1
-        
-        // Предотвращаем закрытие при клике на челку
-        MouseArea {
-            anchors.fill: parent
-            onClicked: mouse.accepted = true
-        }
-        
-        RowLayout {
-            id: rowLayout
-            anchors.centerIn: parent
-            spacing: 12
-            
-            // === ГРУППА 1: Режим (Фото/Видео) ===
-            RowLayout {
-                spacing: 4
+
+    LazyLoader {
+        active: root.active
+        component: PanelWindow {
+            id: win
+
+            function buildCommand(geom) {
+                var timestamp = new Date().toISOString()
+                    .replace("T", "_")
+                    .replace(/:/g, "-")
+                    .slice(0, 19)
+
+                var dir = "$HOME/Pictures/Screenshots"
+                var filepath = dir + "/" + timestamp + ".png"
                 
-                IconButton {
-                    icon: "📷"
-                    active: !isVideo
-                    activeColor: Theme.successColor
-                    onClicked: isVideo = false
+                // 1. Создаём папку
+                var mkdir = "mkdir -p \"" + dir + "\" && "
+                // 2. Ждём 250мс, пока Hyprland полностью скроет оверлей (фейд-аут)
+                var delay = "sleep 0.25 && "
+
+                if (notch.destination === "clipboard")
+                    return delay + mkdir + "grim " + geom + " - | wl-copy"
+
+                if (notch.destination === "file")
+                    return delay + mkdir + "grim " + geom + " \"" + filepath + "\""
+
+                return delay + mkdir + "grim " + geom + " - | tee \"" + filepath + "\" | wl-copy"
+            }
+
+            function captureRegion(x, y, w, h) {
+                var geomRaw = x + "," + y + " " + w + "x" + h  // чистая геометрия
+                var scriptPath = Qt.resolvedUrl("capture.sh").toString().replace("file://", "")
+                
+                Quickshell.execDetached([scriptPath, geomRaw, notch.destination])
+                root.active = false
+            }
+
+            function captureFullscreen() {
+                var scriptPath = Qt.resolvedUrl("capture.sh").toString().replace("file://", "")
+                Quickshell.execDetached([scriptPath, "", notch.destination])
+                root.active = false
+            }
+
+            color: "transparent"
+            anchors { top: true; left: true; right: true; bottom: true }
+
+            WlrLayershell.layer: WlrLayer.Overlay
+            WlrLayershell.exclusionMode: ExclusionMode.Ignore
+            WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+            WlrLayershell.namespace: "capture-test"
+
+            focusable: true
+
+            Item {
+                id: keyHandler
+                anchors.fill: parent
+                focus: true
+                Keys.onEscapePressed: root.active = false
+            }
+
+            Item {
+                id: overlayRoot
+                anchors.fill: parent
+
+                property real startX: 0
+                property real startY: 0
+                property real curX: 0
+                property real curY: 0
+                property bool selecting: false
+                property bool hasSelection: false
+
+                readonly property real selX: Math.min(startX, curX)
+                readonly property real selY: Math.min(startY, curY)
+                readonly property real selW: Math.abs(curX - startX)
+                readonly property real selH: Math.abs(curY - startY)
+
+                readonly property int minDragThreshold: 8
+
+                Rectangle {
+                    anchors.fill: parent
+                    color: Qt.rgba(0, 0, 0, 0.5)
+                    visible: !overlayRoot.hasSelection
                 }
-                
-                IconButton {
-                    icon: "🎥"
-                    active: isVideo
-                    activeColor: "#f38ba8"
-                    onClicked: isVideo = true
+
+                Rectangle {
+                    color: Qt.rgba(0, 0, 0, 0.5)
+                    x: 0; y: 0
+                    width: parent.width
+                    height: overlayRoot.selY
+                    visible: overlayRoot.hasSelection
+                }
+                Rectangle {
+                    color: Qt.rgba(0, 0, 0, 0.5)
+                    x: 0
+                    y: overlayRoot.selY + overlayRoot.selH
+                    width: parent.width
+                    height: parent.height - y
+                    visible: overlayRoot.hasSelection
+                }
+                Rectangle {
+                    color: Qt.rgba(0, 0, 0, 0.5)
+                    x: 0
+                    y: overlayRoot.selY
+                    width: overlayRoot.selX
+                    height: overlayRoot.selH
+                    visible: overlayRoot.hasSelection
+                }
+                Rectangle {
+                    color: Qt.rgba(0, 0, 0, 0.5)
+                    x: overlayRoot.selX + overlayRoot.selW
+                    y: overlayRoot.selY
+                    width: parent.width - x
+                    height: overlayRoot.selH
+                    visible: overlayRoot.hasSelection
+                }
+
+                Rectangle {
+                    x: overlayRoot.selX
+                    y: overlayRoot.selY
+                    width: overlayRoot.selW
+                    height: overlayRoot.selH
+                    color: "transparent"
+                    border.width: 1
+                    border.color: "white"
+                    visible: overlayRoot.hasSelection
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    preventStealing: true
+                    cursorShape: Qt.CrossCursor
+
+                    // Функция для жёсткого ограничения координат границами экрана
+                    function clamp(val, min, max) {
+                        return Math.max(min, Math.min(val, max))
+                    }
+
+                    onPressed: (mouse) => {
+                        // Фиксируем старт тоже с clamp'ом
+                        overlayRoot.startX = clamp(mouse.x, 0, overlayRoot.width)
+                        overlayRoot.startY = clamp(mouse.y, 0, overlayRoot.height)
+                        overlayRoot.curX = overlayRoot.startX
+                        overlayRoot.curY = overlayRoot.startY
+                        overlayRoot.hasSelection = false
+                        overlayRoot.selecting = true
+                    }
+
+                    onPositionChanged: (mouse) => {
+                        if (!overlayRoot.selecting) return
+                        // Ограничиваем текущую позицию
+                        overlayRoot.curX = clamp(mouse.x, 0, overlayRoot.width)
+                        overlayRoot.curY = clamp(mouse.y, 0, overlayRoot.height)
+                        
+                        if (overlayRoot.selW > overlayRoot.minDragThreshold ||
+                            overlayRoot.selH > overlayRoot.minDragThreshold) {
+                            overlayRoot.hasSelection = true
+                        }
+                    }
+
+                    onReleased: {
+                        overlayRoot.selecting = false
+                        if (!overlayRoot.hasSelection) return
+
+                        var x = Math.round(overlayRoot.selX)
+                        var y = Math.round(overlayRoot.selY)
+                        var w = Math.round(overlayRoot.selW)
+                        var h = Math.round(overlayRoot.selH)
+
+                        captureRegion(x, y, w, h)
+                    }
                 }
             }
-            
-            // Разделитель
-            Rectangle {
-                Layout.preferredWidth: 1
-                Layout.preferredHeight: 32
-                color: Qt.alpha(Theme.foregroundColor, 0.15)
+
+            CapNotch {
+                id: notch
+                anchors.top: parent.top
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                onCloseRequested: root.active = false
+                onCaptureFullscreenRequested: win.captureFullscreen()
             }
-            
-            // === ГРУППА 2: Область ===
-            RowLayout {
-                spacing: 4
-                
-                IconButton {
-                    icon: "▭" // Область
-                    active: isArea
-                    activeColor: "#89b4fa"
-                    onClicked: isArea = true
-                }
-                
-                IconButton {
-                    icon: "⛶" // Полный экран (или "☐")
-                    active: !isArea
-                    activeColor: "#89b4fa"
-                    onClicked: isArea = false
+
+            HyprlandFocusGrab {
+                id: grab
+                windows: [win]
+            }
+
+            onVisibleChanged: {
+                if (visible) {
+                    grab.active = true
+                    keyHandler.forceActiveFocus()
                 }
             }
-            
-            // Разделитель
-            Rectangle {
-                Layout.preferredWidth: 1
-                Layout.preferredHeight: 32
-                color: Qt.alpha(Theme.foregroundColor, 0.15)
-                visible: !isVideo
-            }
-            
-            // === ГРУППА 3: Назначение (только для фото) ===
-            RowLayout {
-                spacing: 4
-                visible: !isVideo
-                
-                IconButton {
-                    icon: "📋" // Буфер
-                    active: !saveToFile
-                    activeColor: "#f9e2af"
-                    onClicked: saveToFile = false
-                }
-                
-                IconButton {
-                    icon: "📁" // Файл
-                    active: saveToFile
-                    activeColor: "#f9e2af"
-                    onClicked: saveToFile = true
-                }
-            }
-            
-            // === ГРУППА 3: Формат (только для видео) ===
-            RowLayout {
-                spacing: 4
-                visible: isVideo
-                
-                IconButton {
-                    icon: "🎬" // MP4
-                    active: videoFormat === "mp4"
-                    activeColor: "#a6e3a1"
-                    onClicked: videoFormat = "mp4"
-                }
-                
-                IconButton {
-                    icon: "🎞️" // GIF
-                    active: videoFormat === "gif"
-                    activeColor: "#a6e3a1"
-                    onClicked: videoFormat = "gif"
-                }
-            }
-            
-            // Разделитель (если нужен)
-            Rectangle {
-                Layout.preferredWidth: 1
-                Layout.preferredHeight: 32
-                color: Qt.alpha(Theme.foregroundColor, 0.15)
-                visible: (isVideo || saveToFile)
-            }
-            
-            // === ГРУППА 4: Папка (если сохранение в файл) ===
-            IconButton {
-                icon: "📂"
-                visible: isVideo || saveToFile
-                activeColor: "#cba6f7"
-                onClicked: console.log("Select folder...")
-            }
-            
-            // Разделитель
-            Rectangle {
-                Layout.preferredWidth: 1
-                Layout.preferredHeight: 32
-                color: Qt.alpha(Theme.foregroundColor, 0.15)
-            }
-            
-            // === ГРУППА 5: Старт ===
-            IconButton {
-                icon: isVideo ? "🔴" : "⚡"
-                activeColor: isVideo ? "#f38ba8" : Theme.successColor
-                defaultColor: Qt.alpha(isVideo ? "#f38ba8" : Theme.successColor, 0.2)
-                
-                onClicked: {
-                    root.visible = false
-                    console.log("Capture:", isVideo ? "video" : "screenshot", 
-                               "| area:", isArea, 
-                               "| to:", isVideo ? videoFormat : (saveToFile ? "file" : "clipboard"))
+
+            Connections {
+                target: grab
+                function onActiveChanged() {
+                    if (!grab.active) root.active = false
                 }
             }
         }

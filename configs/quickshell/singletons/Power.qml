@@ -52,15 +52,6 @@ Singleton {
         property real value: 0
     }
 
-    Component.onCompleted: {
-        _findDevice.running = true
-        console.log("PowerProfile enum values:")
-        console.log("  PowerSaver:", PowerProfile.PowerSaver)
-        console.log("  Balanced:", PowerProfile.Balanced)
-        console.log("  Performance:", PowerProfile.Performance)
-        console.log("Current profile:", PowerProfiles.profile)
-    }
-
     Process {
         id: _findDevice
         command: ["bash", "-c", "ls -d /sys/class/backlight/*/ 2>/dev/null | head -n1"]
