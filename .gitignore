@@ -4,3 +4,5 @@ configs/quickshell/theme/colors.json
 configs/hypr/hyprpaper.conf
 
 .luarc.json
+
+preview

@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import qs.theme
 import qs.singletons
+import qs.components
 
 Item {
     id: root
@@ -58,16 +59,9 @@ Item {
         spacing: root.itemSpacing
 
         // ═══════════════ Левая секция ═══════════════
-        Rectangle {
-            implicitWidth: leftGroup.implicitWidth + 2 * root.sectionPadding
-            implicitHeight: leftGroup.implicitHeight + 2 * root.sectionPadding
+        GlassSection {
             Layout.fillHeight: true
-
-            radius: root.sectionRadius
-            gradient: Gradient {
-                GradientStop { position: 0.0; color: Theme.glassGroupStart }
-                GradientStop { position: 1.0; color: Theme.glassGroupEnd }
-            }
+            padding: root.sectionPadding
 
             ColumnLayout {
                 id: leftGroup
@@ -75,67 +69,18 @@ Item {
                 spacing: root.columnSpacing
 
                 // ── Круговой индикатор батареи ───────────────────────────────
-                Item {
+                ArcGauge {
                     id: chargeRing
                     Layout.preferredWidth: root.gaugeSize
                     Layout.preferredHeight: root.gaugeSize
                     Layout.alignment: Qt.AlignHCenter
 
-                    readonly property real arcRadius: width / 2 - root.ringThickness / 2
-                    readonly property real sweepDegrees: 360 - root.ringGapDegrees
-                    readonly property real startAngle: (90 + root.ringGapDegrees / 2) * Math.PI / 180
-                    readonly property real sweepRad: sweepDegrees * Math.PI / 180
-
-                    Canvas {
-                        id: trackCanvas
-                        anchors.fill: parent
-                        onPaint: {
-                            const ctx = getContext("2d")
-                            ctx.reset()
-                            ctx.lineWidth = root.ringThickness
-                            ctx.lineCap = "round"
-                            ctx.strokeStyle = Qt.rgba(205/255, 214/255, 244/255, 0.1)
-                            ctx.beginPath()
-                            ctx.arc(width / 2, height / 2, chargeRing.arcRadius,
-                                    chargeRing.startAngle, chargeRing.startAngle + chargeRing.sweepRad)
-                            ctx.stroke()
-                        }
-                    }
-
-                    Canvas {
-                        id: fillCanvas
-                        anchors.fill: parent
-
-                        Connections {
-                            target: Power
-                            function onBatteryLevelChanged() { fillCanvas.requestPaint() }
-                        }
-
-                        onPaint: {
-                            const ctx = getContext("2d")
-                            ctx.reset()
-
-                            const fillSweep = chargeRing.sweepRad * (Power.batteryLevel / 100)
-                            if (fillSweep <= 0) return
-
-                            const segAngle = fillSweep / root.ringSegments
-                            const overlap = segAngle * 0.15
-
-                            for (let i = 0; i < root.ringSegments; i++) {
-                                const t0 = i / root.ringSegments
-                                const t1 = (i + 1) / root.ringSegments
-                                const a0 = chargeRing.startAngle + segAngle * i - (i > 0 ? overlap : 0)
-                                const a1 = chargeRing.startAngle + segAngle * (i + 1) + (i < root.ringSegments - 1 ? overlap : 0)
-
-                                ctx.strokeStyle = root.ringColorAt((t0 + t1) / 2)
-                                ctx.lineWidth = root.ringThickness
-                                ctx.lineCap = (i === 0 || i === root.ringSegments - 1) ? "round" : "butt"
-                                ctx.beginPath()
-                                ctx.arc(width / 2, height / 2, chargeRing.arcRadius, a0, a1)
-                                ctx.stroke()
-                            }
-                        }
-                    }
+                    thickness: root.ringThickness
+                    gapDegrees: root.ringGapDegrees
+                    segments: root.ringSegments
+                    value: Power.batteryLevel / 100
+                    trackColor: Qt.rgba(205/255, 214/255, 244/255, 0.1)
+                    colorAt: root.ringColorAt
 
                     Text {
                         id: percentageText
@@ -155,9 +100,7 @@ Item {
                         font.family: Theme.fontFamily
                         font.pixelSize: 12
                         font.weight: Font.DemiBold
-                        color: Power.isCharging
-                            ? Theme.successColor
-                            : Theme.mutedTextColor
+                        color: Power.isCharging ? Theme.successColor : Theme.mutedTextColor
                     }
 
                     Text {
@@ -243,16 +186,9 @@ Item {
         }
 
         // ═══════════════ Правая секция ═══════════════
-        Rectangle {
-            implicitWidth: rightGroup.implicitWidth + 2 * root.sectionPadding
-            implicitHeight: rightGroup.implicitHeight + 2 * root.sectionPadding
+        GlassSection {
             Layout.fillHeight: true
-
-            radius: root.sectionRadius
-            gradient: Gradient {
-                GradientStop { position: 0.0; color: Theme.glassGroupStart }
-                GradientStop { position: 1.0; color: Theme.glassGroupEnd }
-            }
+            padding: root.sectionPadding
 
             ColumnLayout {
                 id: rightGroup
@@ -268,7 +204,6 @@ Item {
                     Layout.alignment: Qt.AlignHCenter
 
                     property bool isDragging: false
-
                     readonly property real ratio: Power.brightness
                     readonly property real availableTravel: Math.max(1, height - width)
 
@@ -296,7 +231,6 @@ Item {
                     }
 
                     MouseArea {
-                        id: brightnessArea
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
 
@@ -321,7 +255,6 @@ Item {
                 // ── Кнопка RedShift ──────────────────────────────────────────
                 Rectangle {
                     id: redshiftBtn
-
                     Layout.preferredWidth: root.buttonHeight
                     Layout.preferredHeight: root.buttonHeight
                     Layout.alignment: Qt.AlignHCenter
@@ -334,7 +267,6 @@ Item {
 
                     border.color: root.redshiftEnabled ? Theme.redshiftColor : Theme.glassContainerBorder
                     border.width: 1
-
                     Behavior on border.color { ColorAnimation { duration: 150 } }
 
                     Text {
@@ -346,7 +278,6 @@ Item {
                     }
 
                     MouseArea {
-                        id: rsMouseArea
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
