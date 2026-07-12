@@ -54,6 +54,7 @@ Singleton {
 
     Process {
         id: _findDevice
+        running: true
         command: ["bash", "-c", "ls -d /sys/class/backlight/*/ 2>/dev/null | head -n1"]
         stdout: StdioCollector {
             onStreamFinished: {

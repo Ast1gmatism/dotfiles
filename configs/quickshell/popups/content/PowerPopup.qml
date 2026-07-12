@@ -300,11 +300,11 @@ Item {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
 
-                        onPressed: {
+                        onPressed: (mouse) => {
                             brightnessControl.isDragging = false
                             setBrightnessFromY(mouse.y)
                         }
-                        onPositionChanged: {
+                        onPositionChanged: (mouse) => {
                             if (pressed) brightnessControl.isDragging = true
                             setBrightnessFromY(mouse.y)
                         }
