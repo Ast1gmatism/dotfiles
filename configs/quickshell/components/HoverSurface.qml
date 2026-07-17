@@ -1,16 +1,10 @@
 import QtQuick
 import qs.theme
 
-// Универсальный "hover-фон" для интерактивных плиток панели.
-// Не содержит бизнес-логики клика:
-//  - interactive: true  → включает встроенный MouseArea с сигналом clicked()
-//  - interactive: false → hovered/active передаются снаружи, а клик
-//    реализуется кастомным MouseArea в родителе (например, hold-to-confirm в PowerTile)
 Rectangle {
     id: root
 
     property bool interactive: true
-    property bool hovered: interactive ? mouseArea.containsMouse : false
     property bool active: false
 
     property color normalColor: "transparent"
@@ -24,6 +18,12 @@ Rectangle {
     property int animDuration: 120
 
     signal clicked()
+    property bool hovered: hoverHandler.hovered
+
+    HoverHandler {
+        id: hoverHandler
+        enabled: root.interactive
+    }
 
     radius: 10
     color: active ? activeColor : (hovered ? hoverColor : normalColor)
@@ -33,13 +33,17 @@ Rectangle {
     Behavior on color { ColorAnimation { duration: root.animDuration } }
     Behavior on border.color { ColorAnimation { duration: root.animDuration } }
 
-    MouseArea {
-        id: mouseArea
+    Loader {
+        id: mouseLoader
         anchors.fill: parent
-        enabled: root.interactive
-        visible: root.interactive
-        hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
-        onClicked: root.clicked()
+        active: root.interactive
+        sourceComponent: Component {
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.clicked()
+            }
+        }
     }
 }

@@ -3,7 +3,6 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import qs.theme
 import qs.components
-import qs.singletons
 
 Item {
     id: root
@@ -13,7 +12,6 @@ Item {
 
     // ── Данные ───────────────────────────────────────────────────────────────
 
-    // Системные мониторы. Порядок = порядок отображения в сетке.
     property var systemStats: [
         { name: "CPU",  value: 0.70, centerText: "70%", centerSubText: "58°C",  hasSecondary: true,  secondaryValue: 0.58 },
         { name: "GPU",  value: 0.30, centerText: "30%", centerSubText: "65°C",  hasSecondary: true,  secondaryValue: 0.65 },
@@ -21,25 +19,25 @@ Item {
         { name: "Disk", value: 0.30, centerText: "30%", centerSubText: "142G",  hasSecondary: false, secondaryValue: 0 }
     ]
 
-    // Уведомления
     property var notifications: [
         { app: "Telegram", text: "Новое сообщение от Ани", time: "2м" },
         { app: "Pacman",   text: "Доступно 12 пакетов",    time: "1ч" },
         { app: "Загрузки", text: "dotfiles-backup.tar.gz", time: "3ч" }
     ]
 
-    // TODO: когда появится сервис уведомлений — заменить на реальное
-    // dismiss/invoke-действие (поведение как при клике по нотификации в mako)
-    function dismissNotification(notification) {
-        console.log("TODO: dismiss/activate notification like mako:", notification.app)
+    function activateNotification(notification) {
+        console.log("TODO: mako default action for:", notification.app)
     }
 
-    // Быстрый запуск
+    function closeNotification(notification) {
+        console.log("TODO: mako dismiss (no action) for:", notification.app)
+    }
+
     property var quickLaunchActions: [
-        { id: "capture",   icon: "󰄄", label: "Захват" },
-        { id: "files",     icon: "",  label: "Файлы" },
-        { id: "settings",  icon: "󰒓", label: "Настройки" },
-        { id: "clipboard", icon: "󰅍", label: "Буфер" }
+        { id: "capture",   icon: "\uee2e", label: "Захват" },
+        { id: "files",     icon: "\uf07c",  label: "Файлы" },
+        { id: "settings",  icon: "\uf085", label: "Настройки" },
+        { id: "clipboard", icon: "\ued7b", label: "Буфер" }
     ]
 
     readonly property var quickLaunchHandlers: ({
@@ -55,18 +53,13 @@ Item {
         else console.warn("Unknown quick launch action:", actionId)
     }
 
-    // Питание.
-    // Порядок элемента в массиве определяет его роль: первый — всегда видимая
-    // быстрая кнопка (primaryPowerAction), остальные — в раскрывающемся списке
-    // (secondaryPowerActions). Хочешь поменять, какое действие "быстрое" —
-    // просто переставь его на первое место в массиве.
     property var powerActions: [
-        { id: "lock",      label: "Блокировка",      icon: "󰌾", dangerous: false, weight: 0.8 },
-        { id: "suspend",   label: "Сон",              icon: "󰤄", dangerous: false, weight: 1.0 },
-        { id: "hibernate", label: "Гибернация",       icon: "󰒲", dangerous: false, weight: 1.1 },
-        { id: "logout",    label: "Выход из сессии",  icon: "󰍃", dangerous: false, weight: 1.3 },
-        { id: "reboot",    label: "Перезагрузка",     icon: "󰜉", dangerous: true,  weight: 1.5 },
-        { id: "poweroff",  label: "Выключение",       icon: "󰐥", dangerous: true,  weight: 1.7 }
+        { id: "lock",      label: "Блокировка",       icon: "\uf023", dangerous: false, weight: 0.8 },
+        { id: "suspend",   label: "Сон",              icon: "\uf28c", dangerous: false, weight: 1.0 },
+        { id: "hibernate", label: "Гибернация",       icon: "\uf110", dangerous: false, weight: 1.1 },
+        { id: "logout",    label: "Выход из сессии",  icon: "\uf2f5", dangerous: false, weight: 1.3 },
+        { id: "reboot",    label: "Перезагрузка",     icon: "\uf2ea", dangerous: true,  weight: 1.5 },
+        { id: "poweroff",  label: "Выключение",       icon: "\uf011", dangerous: true,  weight: 1.7 }
     ]
 
     readonly property var primaryPowerAction: root.powerActions[0]
@@ -89,8 +82,6 @@ Item {
 
     property bool sessionMenuOpen: false
 
-    // DND — состояние живёт на уровне root, а не внутри визуального делегата,
-    // чтобы его было легко перевести на реальный сервис одной строкой.
     property bool dndActive: false
 
     function toggleDnd() {
@@ -98,10 +89,22 @@ Item {
         console.log("DND toggled:", root.dndActive)
     }
 
+    Component.onCompleted: {
+        for (const a of root.quickLaunchActions)
+            if (!root.quickLaunchHandlers[a.id])
+                console.warn("No handler for quick launch id:", a.id)
+        for (const a of root.powerActions)
+            if (!root.powerHandlers[a.id])
+                console.warn("No handler for power action id:", a.id)
+    }
+
     // ── Константы ────────────────────────────────────────────────────────────
     readonly property real outerMargin: 12
     readonly property real itemSpacing: 8
     readonly property real sectionPadding: 12
+
+    readonly property real tileVerticalPadding: 9
+    readonly property real listItemPadding: 6
 
     // ─────────────────────────────────────────────────────────────────────────
     RowLayout {
@@ -113,7 +116,6 @@ Item {
 
         // === Панель управления ===============================================
         ColumnLayout {
-            id: leftColumn
             spacing: root.itemSpacing
 
             // ── Шапка ────────────────────────────────────────────────────────
@@ -126,7 +128,6 @@ Item {
                     spacing: 12
 
                     Rectangle {
-                        id: avatar
                         Layout.preferredWidth: 32
                         Layout.preferredHeight: 32
                         radius: width / 2
@@ -139,7 +140,7 @@ Item {
                             font.family: Theme.fontFamily
                             font.pixelSize: 12
                             font.weight: Font.DemiBold
-                            color: "black" // TODO: нужен контрастный цвет к Accent
+                            color: Theme.onAccentColor
                         }
                     }
 
@@ -186,7 +187,6 @@ Item {
                             centerText: modelData.centerText
                             centerSubText: modelData.centerSubText
                             name: modelData.name
-                            // valueColor / secondaryColor вычисляются автоматически внутри StatGauge
                         }
                     }
                 }
@@ -209,7 +209,8 @@ Item {
                         delegate: HoverSurface {
                             required property var modelData
                             Layout.fillWidth: true
-                            Layout.preferredHeight: 56
+
+                            implicitHeight: contentColumn.implicitHeight + root.tileVerticalPadding * 2
 
                             normalColor: "transparent"
                             hoverColor: Theme.subtleFillColor
@@ -217,6 +218,7 @@ Item {
                             onClicked: root.executeQuickLaunch(modelData.id)
 
                             ColumnLayout {
+                                id: contentColumn
                                 anchors.centerIn: parent
                                 spacing: 4
 
@@ -250,7 +252,6 @@ Item {
                     anchors.fill: parent
                     spacing: 0
 
-                    readonly property real tileHeight: 36
                     readonly property real groupSpacing: 2
 
                     RowLayout {
@@ -259,7 +260,8 @@ Item {
 
                         PowerTile {
                             Layout.fillWidth: true
-                            Layout.preferredHeight: sessionColumn.tileHeight
+                            Layout.fillHeight: true
+                            verticalPadding: root.tileVerticalPadding
                             label: root.primaryPowerAction.label
                             icon: root.primaryPowerAction.icon
                             dangerous: root.primaryPowerAction.dangerous
@@ -268,9 +270,10 @@ Item {
                         }
 
                         HoverSurface {
-                            id: sessionToggleBtn
                             Layout.fillWidth: true
-                            Layout.preferredHeight: sessionColumn.tileHeight
+                            Layout.fillHeight: true
+
+                            implicitHeight: toggleRow.implicitHeight + root.tileVerticalPadding * 2
 
                             active: root.sessionMenuOpen
                             normalColor: "transparent"
@@ -281,11 +284,12 @@ Item {
                             onClicked: root.sessionMenuOpen = !root.sessionMenuOpen
 
                             RowLayout {
+                                id: toggleRow
                                 anchors.centerIn: parent
                                 spacing: 7
 
                                 Text {
-                                    text: ""
+                                    text: "\uf105"
                                     font.family: Theme.fontFamily
                                     font.pixelSize: 14
                                     color: Theme.mutedTextColor
@@ -330,7 +334,7 @@ Item {
                                 delegate: PowerTile {
                                     required property var modelData
                                     Layout.fillWidth: true
-                                    Layout.preferredHeight: sessionColumn.tileHeight
+                                    verticalPadding: root.tileVerticalPadding
                                     label: modelData.label
                                     icon: modelData.icon
                                     dangerous: modelData.dangerous
@@ -356,9 +360,9 @@ Item {
 
                 // ── 1. ПРОМИНЕНТНЫЙ БАННЕР DND ───────────────────────────────
                 HoverSurface {
-                    id: dndBanner
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 42
+
+                    implicitHeight: dndRow.implicitHeight + root.tileVerticalPadding * 2
 
                     active: root.dndActive
                     normalColor: Theme.subtleFillColor
@@ -371,6 +375,7 @@ Item {
                     onClicked: root.toggleDnd()
 
                     RowLayout {
+                        id: dndRow
                         anchors.fill: parent
                         anchors.leftMargin: 12
                         anchors.rightMargin: 12
@@ -380,7 +385,7 @@ Item {
                             text: root.dndActive ? "󰂛" : "󰂪"
                             font.family: Theme.fontFamily
                             font.pixelSize: 18
-                            color: root.dndActive ? Colors.palette.crust : Theme.foregroundColor
+                            color: root.dndActive ? Theme.onAccentColor : Theme.foregroundColor
                             Behavior on color { ColorAnimation { duration: 150 } }
                         }
 
@@ -389,7 +394,7 @@ Item {
                             font.family: Theme.fontFamily
                             font.pixelSize: 12
                             font.weight: root.dndActive ? Font.Bold : Font.DemiBold
-                            color: root.dndActive ? Colors.palette.crust : Theme.foregroundColor
+                            color: root.dndActive ? Theme.onAccentColor : Theme.foregroundColor
                             Layout.fillWidth: true
                             Behavior on color { ColorAnimation { duration: 150 } }
                         }
@@ -399,7 +404,7 @@ Item {
                             font.family: Theme.fontFamily
                             font.pixelSize: 10
                             font.weight: Font.Bold
-                            color: Colors.palette.crust
+                            color: Theme.onAccentColor
                             visible: root.dndActive
                         }
                     }
@@ -444,22 +449,27 @@ Item {
                     model: root.notifications
 
                     delegate: HoverSurface {
+                        id: notifTile
                         required property var modelData
                         width: ListView.view.width
-                        height: 40
+
+                        implicitHeight: notifColumn.implicitHeight + root.listItemPadding * 2
 
                         normalColor: "transparent"
                         hoverColor: Theme.subtleFillColor
 
-                        onClicked: root.dismissNotification(modelData)
+                        onClicked: root.activateNotification(modelData)
 
                         ColumnLayout {
+                            id: notifColumn
                             anchors.fill: parent
-                            anchors.margins: 6
+                            anchors.margins: root.listItemPadding
                             spacing: 1
 
                             RowLayout {
                                 Layout.fillWidth: true
+                                spacing: 6
+
                                 Text {
                                     text: modelData.app
                                     font.family: Theme.fontFamily
@@ -467,15 +477,53 @@ Item {
                                     font.weight: Font.DemiBold
                                     color: Theme.foregroundColor
                                     Layout.fillWidth: true
+                                    Layout.alignment: Qt.AlignVCenter
                                     elide: Text.ElideRight
                                 }
-                                Text {
-                                    text: modelData.time
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: 9
-                                    color: Theme.mutedTextColor
+
+                                Item {
+                                    id: metaSlot
+                                    readonly property real closeButtonSize: 14
+
+                                    implicitWidth: Math.max(timeLabel.implicitWidth, closeButtonSize)
+                                    implicitHeight: closeButtonSize
+                                    Layout.alignment: Qt.AlignVCenter
+
+                                    Text {
+                                        id: timeLabel
+                                        anchors.right: parent.right
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: modelData.time
+                                        font.family: Theme.fontFamily
+                                        font.pixelSize: 9
+                                        color: Theme.mutedTextColor
+                                        opacity: notifTile.hovered ? 0 : 1
+                                        Behavior on opacity { NumberAnimation { duration: 120 } }
+                                    }
+
+                                    HoverSurface {
+                                        anchors.right: parent.right
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        width: metaSlot.closeButtonSize
+                                        height: metaSlot.closeButtonSize
+                                        radius: 4
+                                        normalColor: "transparent"
+                                        hoverColor: Theme.errorColor
+                                        opacity: notifTile.hovered ? 1 : 0
+                                        Behavior on opacity { NumberAnimation { duration: 120 } }
+
+                                        onClicked: root.closeNotification(modelData)
+
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: "\u2715"
+                                            font.pixelSize: 8
+                                            color: parent.hovered ? Theme.onAccentColor : Theme.mutedTextColor
+                                        }
+                                    }
                                 }
                             }
+                            
                             Text {
                                 text: modelData.text
                                 font.family: Theme.fontFamily

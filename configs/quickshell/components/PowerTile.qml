@@ -13,6 +13,9 @@ HoverSurface {
 
     signal confirmed
 
+    // HoverSurface.interactive: false исключает создание встроенного
+    // MouseArea (см. HoverSurface.qml — Loader.active: interactive) —
+    // весь жест удержания целиком обрабатывает наш собственный tileArea ниже.
     interactive: false
     hovered: tileArea.containsMouse
     clip: true
@@ -22,55 +25,77 @@ HoverSurface {
     hoverColor: Qt.rgba(activeColor.r, activeColor.g, activeColor.b, 0.08)
     hoverBorderColor: Qt.rgba(activeColor.r, activeColor.g, activeColor.b, 0.25)
 
+    property real verticalPadding: 9
+    implicitHeight: tileLabel.implicitHeight + verticalPadding * 2
+
     readonly property real baseDuration: 420
     property real holdT: 0
 
-    function logProgress(t) {
-        return Math.log(1 + 9 * t) / Math.LN10
-    }
+    property int fillEasingType: Easing.OutCubic
+
+    // ── Визуальный тюнинг эффекта заливки ────────────────────────────────────
+    // Вынесено в property, чтобы можно было подбирать значения снаружи,
+    // не залезая внутрь Canvas.onPaint.
+    property real particleBaseOffset: 8        // отступ первой частицы от края волны
+    property real particleSpacing: 14          // расстояние между соседними частицами
+    property real particlePulseAmplitude: 0.6  // амплитуда пульсации радиуса частиц
+    property real crestLineWidth: 1.5          // толщина линии гребня волны
 
     NumberAnimation {
         id: fillAnim
         target: tile
         property: "holdT"
-        from: 0
-        to: 1
+        from: 0; to: 1
         duration: Math.round(tile.baseDuration * tile.weight)
-        easing.type: Easing.Linear
+        easing.type: tile.fillEasingType
 
         onFinished: {
-            tile.confirmed()
+            // Сначала — визуальный отклик, потом сам вызов действия.
+            // confirmed() обязан оставаться неблокирующим
+            // (Quickshell.execDetached, а не синхронный вызов) — иначе
+            // flash и сброс заливки визуально подвиснут на время его работы.
             flashRect.opacity = 0.4
             flashAnim.start()
-            resetTimer.start()
+
+            // Плавный "дренаж" заливки был заменён на мгновенный сброс:
+            // по результатам визуальной проверки резкий snap на фоне
+            // короткой яркой вспышки воспринимается лучше, чем медленное угасание.
+            tile.holdT = 0
+
+            tile.confirmed()
         }
     }
 
-    Timer {
-        id: resetTimer
-        interval: 350
-        onTriggered: tile.holdT = 0
-    }
-
-    // ── Заливка + волна, клипованная по скруглённой форме tile ──
+    // ── Волновая заливка + гребень + частицы, всё в одном Canvas ────────────
     Canvas {
         id: fillCanvas
         anchors.fill: parent
         property real phase: 0
 
+        // Единая точка конвертации QML-color в CSS-строку с альфой.
+        // Qt.rgba(...) здесь не подходит: присвоенный Canvas 2D API
+        // (ctx.fillStyle/strokeStyle) QML-объект color неявно приводится
+        // через toString(), который отдаёт "#RRGGBB" без альфа-канала —
+        // прозрачность потерялась бы. Строка собирается вручную намеренно.
+        function rgba(c, alpha) {
+            return "rgba(" + Math.round(c.r * 255) + "," +
+                              Math.round(c.g * 255) + "," +
+                              Math.round(c.b * 255) + "," + alpha + ")"
+        }
+
         onPaint: {
             var ctx = getContext("2d")
             ctx.clearRect(0, 0, width, height)
 
-            var p = tile.logProgress(tile.holdT)
+            var p = tile.holdT
             if (p <= 0.001) return
 
             ctx.save()
 
+            // 1. Клип по скруглённой форме тайла
             var r = tile.radius
             ctx.beginPath()
-            ctx.moveTo(r, 0)
-            ctx.lineTo(width - r, 0)
+            ctx.moveTo(r, 0); ctx.lineTo(width - r, 0)
             ctx.arcTo(width, 0, width, r, r)
             ctx.lineTo(width, height - r)
             ctx.arcTo(width, height, width - r, height, r)
@@ -83,7 +108,9 @@ HoverSurface {
 
             var edgeX = p * width
             var amp = 2.5 * Math.sin(p * Math.PI)
+            var c = tile.activeColor
 
+            // 2. Основная полупрозрачная заливка
             ctx.beginPath()
             ctx.moveTo(0, 0)
             for (var y = 0; y <= height; y += 4) {
@@ -92,13 +119,36 @@ HoverSurface {
             }
             ctx.lineTo(0, height)
             ctx.closePath()
-
-            var c = tile.activeColor
-            var rgba = "rgba(" + Math.round(c.r * 255) + "," +
-                                  Math.round(c.g * 255) + "," +
-                                  Math.round(c.b * 255) + ",0.26)"
-            ctx.fillStyle = rgba
+            ctx.fillStyle = rgba(c, 0.26)
             ctx.fill()
+
+            // 3. Плавающие частицы позади волны
+            ctx.fillStyle = rgba(c, 0.5)
+            for (var i = 1; i <= 4; i++) {
+                var distX = tile.particleBaseOffset + i * tile.particleSpacing
+                if (edgeX > distX) {
+                    var bx = edgeX - distX + 4 * Math.sin(phase * 1.5 + i)
+                    var by = (height / 2) + (height / 3) * Math.sin(phase + i * 2.0)
+                    var br = 1.0 + tile.particlePulseAmplitude * Math.cos(phase + i)
+
+                    ctx.beginPath()
+                    ctx.arc(bx, by, br, 0, 2 * Math.PI)
+                    ctx.fill()
+                }
+            }
+
+            // 4. Тонкая линия гребня волны — отдельный путь, не связанный
+            // с контуром заливки, поэтому линия не обводит углы/дно фигуры.
+            ctx.beginPath()
+            var startWob = Math.sin((0 / height) * Math.PI * 3 + phase) * amp
+            ctx.moveTo(edgeX + startWob, 0)
+            for (var wy = 4; wy <= height; wy += 4) {
+                var waveWob = Math.sin((wy / height) * Math.PI * 3 + phase) * amp
+                ctx.lineTo(edgeX + waveWob, wy)
+            }
+            ctx.lineWidth = tile.crestLineWidth
+            ctx.strokeStyle = rgba(c, 0.8)
+            ctx.stroke()
 
             ctx.restore()
         }
@@ -113,6 +163,7 @@ HoverSurface {
     }
 
     onHoldTChanged: fillCanvas.requestPaint()
+    onActiveColorChanged: fillCanvas.requestPaint()
 
     Rectangle {
         id: flashRect
@@ -140,19 +191,23 @@ HoverSurface {
         Item {
             Layout.preferredWidth: 20
             Layout.fillHeight: true
+
             Text {
                 anchors.centerIn: parent
                 text: tile.icon
                 font.family: Theme.fontFamily
                 font.pixelSize: 14
                 color: tile.dangerous
-                    ? (tile.hovered ? tile.activeColor : Qt.rgba(tile.activeColor.r, tile.activeColor.g, tile.activeColor.b, 0.7))
+                    ? (tile.hovered
+                       ? tile.activeColor
+                       : Qt.rgba(tile.activeColor.r, tile.activeColor.g, tile.activeColor.b, 0.7))
                     : (tile.hovered ? tile.activeColor : Theme.mutedTextColor)
                 Behavior on color { ColorAnimation { duration: 120 } }
             }
         }
 
         Text {
+            id: tileLabel
             text: tile.label
             font.family: Theme.fontFamily
             font.pixelSize: 12

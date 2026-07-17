@@ -22,6 +22,8 @@ Singleton {
 
     // ── Роли: акценты ──────────────────────────────────────
     readonly property color accentColor: Colors.palette.accent1
+    readonly property color onAccentColor: Colors.palette.crust
+    // TODO: авто-контраст по формуле относительной яркости
 
     // ── Роли: заливки состояний UI ─────────────────────────
     readonly property color subtleFillColor:      Qt.alpha(Colors.palette.text, 0.06)
