@@ -15,7 +15,7 @@ Item {
 
         ShapePath {
             fillColor: Theme.glassContainer
-            strokeColor: Theme.glassContainerBorder
+            strokeColor: Theme.glassBorder
             strokeWidth: 1
             startY: -r
             PathQuad { relativeX:  r; relativeY: r; relativeControlX:  0; relativeControlY: r }

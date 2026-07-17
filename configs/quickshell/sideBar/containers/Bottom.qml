@@ -15,7 +15,7 @@ Item {
         ShapePath {
             startY: -r
             fillColor: Theme.glassContainer
-            strokeColor: Theme.glassContainerBorder
+            strokeColor: Theme.glassBorder
             strokeWidth: 1
             PathQuad { relativeX:  r; relativeY: r; relativeControlX:  0; relativeControlY: r }
             PathQuad { relativeX:  r; relativeY: r; relativeControlX:  r; relativeControlY: 0 }
@@ -40,13 +40,8 @@ Item {
                 anchors.fill: parent
                 ShapePath {
                     startY: -r
-                    fillGradient: LinearGradient {
-                        x1: 0; y1: 0
-                        x2: 0; y2: parent.height
-                        GradientStop { position: 0.0; color: Theme.glassGroupStart }
-                        GradientStop { position: 1.0; color: Theme.glassGroupEnd }
-                    }
-                    strokeColor: Theme.glassGroupBorder
+                    fillColor: Theme.glassGroup
+                    strokeColor: Theme.glassBorder
                     strokeWidth: 1
 
                     PathQuad { relativeX:  r; relativeY: r; relativeControlX:  0; relativeControlY: r }

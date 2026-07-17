@@ -14,7 +14,7 @@ Item {
         preferredRendererType: Shape.CurveRenderer
         ShapePath {
             fillColor: Theme.glassContainer
-            strokeColor: Theme.glassContainerBorder
+            strokeColor: Theme.glassBorder
             strokeWidth: 1
             PathLine { relativeX: width; relativeY: 0}
             PathLine { relativeX: 0; relativeY: outer.height + pad - r}
@@ -36,13 +36,8 @@ Item {
             Shape {
                 preferredRendererType: Shape.CurveRenderer
                 ShapePath {
-                    fillGradient: LinearGradient {
-                        x1: 0; y1: 0
-                        x2: 0; y2: parent.height
-                        GradientStop { position: 0.0; color: Theme.glassGroupStart }
-                        GradientStop { position: 1.0; color: Theme.glassGroupEnd }
-                    }
-                    strokeColor: Theme.glassGroupBorder
+                    fillColor: Theme.glassGroup
+                    strokeColor: Theme.glassBorder
                     strokeWidth: 1
 
                     PathLine { relativeX: width; relativeY: 0}

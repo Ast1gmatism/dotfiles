@@ -8,8 +8,8 @@ Item {
     height: Theme.sideBarWidth 
 
     Component {
-        id: controlContent
-        ControlCenter {}
+        id: menuContent
+        MenuPopup {}
     }
 
     Image {
@@ -24,6 +24,6 @@ Item {
         id: mouseArea
         anchors.fill: parent
         hoverEnabled: true
-        onClicked: mainPopup.toggle(controlContent, root, 10)
+        onClicked: mainPopup.toggle(menuContent, root, 10)
     }
 }

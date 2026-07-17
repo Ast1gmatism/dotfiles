@@ -1,4 +1,3 @@
-// qs/components/StatGaugeTile.qml
 import QtQuick
 import QtQuick.Layouts
 import qs.theme
@@ -7,22 +6,36 @@ ColumnLayout {
     id: root
     spacing: -15
 
-    property real gaugeSize: 80
+    property real gaugeSize: 65
     property real thickness: 6
-    property real gapDegrees: 60
+    property real gapDegrees: 70
 
     property real value: 0
-    property color valueColor: Theme.accentColor
+
+    // Пороги автоцвета по значению (0..1). Можно переопределить сами пороги
+    // или сразу valueColor/secondaryColor снаружи — тогда биндинг по умолчанию
+    // будет заменён явным значением.
+    property real warningThreshold: 0.65
+    property real dangerThreshold: 0.85
+    property color valueColor: root.levelColor(root.value, root.warningThreshold, root.dangerThreshold)
 
     property bool hasSecondary: false
     property real secondaryValue: 0
     property real secondaryThickness: 2
-    property color secondaryColor: Theme.warningColor
+    property real secondaryWarningThreshold: 0.5
+    property real secondaryDangerThreshold: 0.8
+    property color secondaryColor: root.levelColor(root.secondaryValue, root.secondaryWarningThreshold, root.secondaryDangerThreshold)
     property real secondaryOpacity: 0.6
 
     property string centerText: ""
     property string centerSubText: ""
     property string name: ""
+
+    function levelColor(v, warn, danger) {
+        if (v >= danger) return Theme.errorColor
+        if (v >= warn) return Theme.warningColor
+        return Theme.successColor
+    }
 
     Item {
         Layout.preferredWidth: root.gaugeSize

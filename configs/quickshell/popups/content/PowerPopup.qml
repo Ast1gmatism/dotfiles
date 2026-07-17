@@ -17,7 +17,7 @@ Item {
 
     // ── Константы ────────────────────────────────────────────────────────────
     readonly property var profiles: [
-        { id: "saver",    icon: "󰌪" },
+        { id: "saver",    icon: "󰾆" },
         { id: "balanced", icon: "󰾅" },
         { id: "perf",     icon: "󰓅" }
     ]
@@ -25,32 +25,16 @@ Item {
     readonly property real gaugeSize: 145
     readonly property real buttonHeight: 36
 
-    // ── Отступы ────────────────────────────────────────────────
-    readonly property real outerMargin: 12     // от края попапа до контента (RowLayout)
-    readonly property real itemSpacing: 12     // между левой и правой секцией
-    readonly property real sectionPadding: 12  // от края секции (Rectangle) до её контента
-    readonly property real columnSpacing: 12   // между виджетами внутри одной колонки
-    readonly property real sectionRadius: 12
+    // ── Отступы ──────────────────────────────────────────────────────────────
+    readonly property real outerMargin: 12
+    readonly property real itemSpacing: 12
+    readonly property real sectionPadding: 12
+    readonly property real columnSpacing: 12
 
-    // ── Параметры дуги батареи ─────────────────────────────────
+    // ── Параметры дуги батареи ───────────────────────────────────────────────
     readonly property real ringThickness: 10
     readonly property real ringGapDegrees: 60
-    readonly property int ringSegments: 48
-
-    function lerpColor(c1, c2, t) {
-        return Qt.rgba(
-            c1.r + (c2.r - c1.r) * t,
-            c1.g + (c2.g - c1.g) * t,
-            c1.b + (c2.b - c1.b) * t,
-            c1.a + (c2.a - c1.a) * t
-        )
-    }
-
-    function ringColorAt(t) {
-        return t < 0.5
-            ? lerpColor(Theme.batteryGradientStart, Theme.batteryGradientMid, t / 0.5)
-            : lerpColor(Theme.batteryGradientMid, Theme.batteryGradientStart, (t - 0.5) / 0.5)
-    }
+    readonly property int ringSegments: 50
 
     // ─────────────────────────────────────────────────────────────────────────
     RowLayout {
@@ -68,50 +52,16 @@ Item {
                 anchors.centerIn: parent
                 spacing: root.columnSpacing
 
-                // ── Круговой индикатор батареи ───────────────────────────────
-                ArcGauge {
-                    id: chargeRing
+                // ── Индикатор батареи ────────────────────────────────────────
+                BatteryArc {
                     Layout.preferredWidth: root.gaugeSize
                     Layout.preferredHeight: root.gaugeSize
                     Layout.alignment: Qt.AlignHCenter
 
+                    size: root.gaugeSize
                     thickness: root.ringThickness
                     gapDegrees: root.ringGapDegrees
                     segments: root.ringSegments
-                    value: Power.batteryLevel / 100
-                    trackColor: Qt.rgba(205/255, 214/255, 244/255, 0.1)
-                    colorAt: root.ringColorAt
-
-                    Text {
-                        id: percentageText
-                        anchors.centerIn: parent
-                        text: Math.round(Power.batteryLevel) + "%"
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 30
-                        font.weight: Font.DemiBold
-                        color: Theme.foregroundColor
-                    }
-
-                    Text {
-                        anchors.top: percentageText.bottom
-                        anchors.topMargin: -7
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: Power.wattsStr
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 12
-                        font.weight: Font.DemiBold
-                        color: Power.isCharging ? Theme.successColor : Theme.mutedTextColor
-                    }
-
-                    Text {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.bottom: parent.bottom
-                        anchors.bottomMargin: 3
-                        text: Power.timeStr
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 14
-                        color: Theme.mutedTextColor
-                    }
                 }
 
                 // ── Кнопки профилей ──────────────────────────────────────────
@@ -121,12 +71,9 @@ Item {
                     Layout.preferredHeight: root.buttonHeight
                     radius: 10
                     border.width: 1
-                    border.color: Theme.glassContainerBorder
+                    border.color: Theme.glassBorder
 
-                    gradient: Gradient {
-                        GradientStop { position: 0.0; color: Theme.glassGroupEnd }
-                        GradientStop { position: 1.0; color: Theme.glassGroupStart }
-                    }
+                    color: Theme.glassSelect
 
                     readonly property int currentIndex: {
                         for (let i = 0; i < root.profiles.length; ++i) {
@@ -212,7 +159,7 @@ Item {
                         anchors.fill: parent
                         radius: width / 2
                         color: Theme.subtleFillColor
-                        border.color: Theme.glassContainerBorder
+                        border.color: Theme.glassBorder
                         border.width: 1
 
                         Rectangle {
@@ -260,12 +207,9 @@ Item {
                     Layout.alignment: Qt.AlignHCenter
                     radius: 8
 
-                    gradient: Gradient {
-                        GradientStop { position: 0.0; color: Theme.glassGroupEnd }
-                        GradientStop { position: 1.0; color: Theme.glassGroupStart }
-                    }
+                    color: Theme.glassSelect
 
-                    border.color: root.redshiftEnabled ? Theme.redshiftColor : Theme.glassContainerBorder
+                    border.color: root.redshiftEnabled ? Theme.redshiftColor : Theme.glassBorder
                     border.width: 1
                     Behavior on border.color { ColorAnimation { duration: 150 } }
 

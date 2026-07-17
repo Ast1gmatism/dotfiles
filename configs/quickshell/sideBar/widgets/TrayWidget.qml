@@ -25,6 +25,7 @@ Column {
                 id: trayMenuComponent
                 TrayMenu {
                     menu: trayItem.modelData.menu
+                    onCloseRequested: mainPopup.toggle(trayMenuComponent, trayItem, 10)
                 }
             }
 

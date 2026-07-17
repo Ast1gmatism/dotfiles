@@ -6,10 +6,9 @@ Singleton {
     // ── Роли: стекло (glassmorphism) ─────────────────────
     readonly property color glassPanel:           Qt.alpha(Colors.palette.base, 0.20)
     readonly property color glassContainer:       Qt.alpha(Colors.palette.base, 0.55)
-    readonly property color glassContainerBorder: Qt.alpha(Colors.palette.text, 0.08)
-    readonly property color glassGroupStart:      Qt.alpha(Colors.palette.surface1, 0.55)
-    readonly property color glassGroupEnd:        Qt.alpha(Colors.palette.surface0, 0.40)
-    readonly property color glassGroupBorder:     Qt.alpha(Colors.palette.text, 0.10)
+    readonly property color glassGroup:           Qt.alpha(Colors.palette.surface0, 0.70)
+    readonly property color glassSelect:          Qt.alpha(Colors.palette.base, 0.40)
+    readonly property color glassBorder:          Qt.alpha(Colors.palette.text, 0.10)
 
     // ── Роли: текст ──────────────────────────────────────
     readonly property color foregroundColor:   Colors.palette.text

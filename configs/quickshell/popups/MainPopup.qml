@@ -37,7 +37,7 @@ PanelWindow {
         color: Theme.glassContainer
         radius: Theme.popupBorderRadius
         border.width: Theme.popupBorderWidth
-        border.color: Theme.glassContainerBorder
+        border.color: Theme.glassBorder
         clip: true
 
         implicitWidth: root.visible ? (stack.currentItem?.implicitWidth ?? 0) : 0

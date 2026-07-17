@@ -3,9 +3,10 @@ import Quickshell
 import qs.theme
 
 Column {
-    id: menuRoot
+    id: root
 
     property var menu
+    signal closeRequested()
 
     width: 180 // FIXME: должно зависеть от самого широкого элемента меню
     spacing: 2
@@ -14,7 +15,7 @@ Column {
 
     QsMenuOpener {
         id: opener
-        menu: menuRoot.menu
+        menu: root.menu
     }
 
     Repeater {
@@ -22,7 +23,7 @@ Column {
         delegate: Loader {
             id: entryLoader
             required property QsMenuEntry modelData
-            width: menuRoot.width
+            width: root.width
             sourceComponent: modelData.isSeparator ? separatorComponent : itemComponent
         }
     }
@@ -30,10 +31,10 @@ Column {
     Component {
         id: separatorComponent
         Rectangle {
-            width: menuRoot.width - 12
+            width: root.width - 12
             anchors.horizontalCenter: parent.horizontalCenter
             height: 1
-            color: Theme.glassContainerBorder
+            color: Theme.glassBorder
         }
     }
 
@@ -44,7 +45,7 @@ Column {
 
             readonly property QsMenuEntry entry: parent.modelData
 
-            width: menuRoot.width
+            width: root.width
             height: 28
             radius: 6
             color: mouseArea.containsMouse && entry.enabled
@@ -70,8 +71,7 @@ Column {
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
                     entryDelegate.entry.triggered()
-                    mainPopup._close()
-                    // FIXME: прямой референс по id, заменить на функцию
+                    root.closeRequested()
                 }
             }
         }

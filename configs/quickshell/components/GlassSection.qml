@@ -14,10 +14,7 @@ Rectangle {
     property real padding: 12
 
     radius: 12
-    gradient: Gradient {
-        GradientStop { position: 0.0; color: Theme.glassGroupStart }
-        GradientStop { position: 1.0; color: Theme.glassGroupEnd }
-    }
+    color: Theme.glassGroup
 
     implicitWidth: inner.implicitWidth + padding * 2
     implicitHeight: inner.implicitHeight + padding * 2
