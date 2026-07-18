@@ -69,27 +69,24 @@ Item {
                     id: profileSwitch
                     Layout.fillWidth: true
                     Layout.preferredHeight: root.buttonHeight
-                    radius: 10
+                    radius: Theme.radiusM
                     border.width: 1
                     border.color: Theme.glassBorder
 
                     color: Theme.glassSelect
 
                     readonly property int currentIndex: {
-                        for (let i = 0; i < root.profiles.length; ++i) {
-                            if (root.profiles[i].id === root.activeProfile)
-                                return i
-                        }
-                        return 0
+                        const idx = root.profiles.findIndex(p => p.id === root.activeProfile)
+                        return idx >= 0 ? idx : 0
                     }
 
                     Rectangle {
-                        id: activePill
                         width: parent.width / root.profiles.length
-                        height: parent.height
-                        radius: 10
+                        height: parent.height - parent.border.width * 2
+                        y: parent.border.width
+                        radius: profileSwitch.radius
                         x: width * profileSwitch.currentIndex
-                        color: Theme.activeFillColor
+                        color: Theme.accentColor
 
                         Behavior on x {
                             NumberAnimation { duration: 180; easing.type: Easing.OutCubic }
@@ -102,28 +99,28 @@ Item {
                         Repeater {
                             model: root.profiles
 
-                            delegate: Item {
+                            delegate: HoverSurface {
+                                id: profileSegment
+                                required property var modelData
                                 width: profileSwitch.width / root.profiles.length
                                 height: profileSwitch.height
 
-                                required property var modelData
                                 readonly property bool isActive: root.activeProfile === modelData.id
+
+                                normalColor: "transparent"
+                                hoverColor: "transparent"
+                                activeColor: "transparent"
+
+                                onClicked: Power.setProfile(modelData.id)
 
                                 Text {
                                     anchors.centerIn: parent
                                     text: modelData.icon
                                     font.family: Theme.fontFamily
-                                    font.pixelSize: 16
-                                    color: parent.isActive
-                                        ? Theme.accentColor
-                                        : Theme.foregroundColor
-                                }
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: Power.setProfile(modelData.id)
+                                    font.pixelSize: Theme.iconL
+                                    color: profileSegment.isActive
+                                        ? Theme.onAccentColor
+                                        : (profileSegment.hovered ? Theme.accentColor : Theme.foregroundColor)
                                 }
                             }
                         }
@@ -200,32 +197,31 @@ Item {
                 }
 
                 // ── Кнопка RedShift ──────────────────────────────────────────
-                Rectangle {
+                HoverSurface {
                     id: redshiftBtn
                     Layout.preferredWidth: root.buttonHeight
                     Layout.preferredHeight: root.buttonHeight
                     Layout.alignment: Qt.AlignHCenter
-                    radius: 8
 
-                    color: Theme.glassSelect
+                    active: root.redshiftEnabled
+                    normalColor: Theme.glassSelect
+                    hoverColor: Theme.glassSelect
+                    activeColor: Theme.redshiftColor
+                    normalBorderColor: Theme.glassBorder
+                    hoverBorderColor: Theme.redshiftColor
+                    activeBorderColor: Theme.redshiftColor
 
-                    border.color: root.redshiftEnabled ? Theme.redshiftColor : Theme.glassBorder
-                    border.width: 1
-                    Behavior on border.color { ColorAnimation { duration: 150 } }
+                    onClicked: Power.redshiftEnabled = !Power.redshiftEnabled
 
                     Text {
                         anchors.centerIn: parent
                         text: "󰖔"
                         font.family: Theme.fontFamily
-                        font.pixelSize: 16
-                        color: root.redshiftEnabled ? Theme.redshiftColor : Theme.foregroundColor
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: Power.redshiftEnabled = !Power.redshiftEnabled
+                        font.pixelSize: Theme.iconS
+                        color: root.redshiftEnabled
+                            ? Theme.onAccentColor
+                            : (redshiftBtn.hovered ? Theme.redshiftColor : Theme.foregroundColor)
+                        Behavior on color { ColorAnimation { duration: 150 } }
                     }
                 }
             }

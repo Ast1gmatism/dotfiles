@@ -360,16 +360,17 @@ Item {
 
                 // ── 1. ПРОМИНЕНТНЫЙ БАННЕР DND ───────────────────────────────
                 HoverSurface {
+                    id: dndBanner
                     Layout.fillWidth: true
 
                     implicitHeight: dndRow.implicitHeight + root.tileVerticalPadding * 2
 
                     active: root.dndActive
-                    normalColor: Theme.subtleFillColor
-                    hoverColor: Theme.hoverFillColor
+                    normalColor: Theme.glassSelect
+                    hoverColor: Theme.glassSelect
                     activeColor: Theme.accentColor
                     normalBorderColor: Theme.glassBorder
-                    hoverBorderColor: Theme.glassBorder
+                    hoverBorderColor: Theme.accentColor
                     activeBorderColor: Theme.accentColor
 
                     onClicked: root.toggleDnd()
@@ -384,17 +385,21 @@ Item {
                         Text {
                             text: root.dndActive ? "󰂛" : "󰂪"
                             font.family: Theme.fontFamily
-                            font.pixelSize: 18
-                            color: root.dndActive ? Theme.onAccentColor : Theme.foregroundColor
+                            font.pixelSize: Theme.iconL
+                            color: root.dndActive
+                                ? Theme.onAccentColor
+                                : (dndBanner.hovered ? Theme.accentColor : Theme.foregroundColor)
                             Behavior on color { ColorAnimation { duration: 150 } }
                         }
 
                         Text {
                             text: "Не беспокоить"
                             font.family: Theme.fontFamily
-                            font.pixelSize: 12
+                            font.pixelSize: Theme.textTitle
                             font.weight: root.dndActive ? Font.Bold : Font.DemiBold
-                            color: root.dndActive ? Theme.onAccentColor : Theme.foregroundColor
+                            color: root.dndActive
+                                ? Theme.onAccentColor
+                                : (dndBanner.hovered ? Theme.accentColor : Theme.foregroundColor)
                             Layout.fillWidth: true
                             Behavior on color { ColorAnimation { duration: 150 } }
                         }
@@ -402,7 +407,7 @@ Item {
                         Text {
                             text: root.dndActive ? "ВКЛ" : ""
                             font.family: Theme.fontFamily
-                            font.pixelSize: 10
+                            font.pixelSize: Theme.textBody
                             font.weight: Font.Bold
                             color: Theme.onAccentColor
                             visible: root.dndActive

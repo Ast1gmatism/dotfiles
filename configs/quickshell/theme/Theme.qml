@@ -28,17 +28,35 @@ Singleton {
     // ── Роли: заливки состояний UI ─────────────────────────
     readonly property color subtleFillColor:      Qt.alpha(Colors.palette.text, 0.06)
     readonly property color hoverFillColor:       Qt.alpha(Colors.palette.text, 0.10)
-    readonly property color highlightBorderColor: Qt.alpha(Colors.palette.text, 0.15)
-    readonly property color activeFillColor:      Qt.alpha(Colors.palette.accent1, 0.16)
 
     // ── Роли: виджет-специфичные ────────────────────────────
     readonly property color batteryGradientStart: Colors.palette.accent2
     readonly property color batteryGradientMid:   Colors.palette.accent3
     readonly property color brightnessColor:      Colors.palette.yellow
     readonly property color redshiftColor:        Colors.palette.peach
-    readonly property color volumeColor:          Colors.palette.accent1
 
     // ── Размеры, шрифты ──────────────────────────────────────
+    // ── Отступы (spacing scale) ──────────────────────────────────────────────
+    readonly property real spacingXS: 4   // плотные списки (уведомления)
+    readonly property real spacingS: 8    // между элементами внутри секции, паддинг тайлов
+    readonly property real spacingM: 12   // паддинг секций (GlassSection), внешние отступы попапа
+
+    // ── Радиусы (radius scale) ────────────────────────────────────────────────
+    readonly property real radiusS: 4     // мелкие элементы (кнопка закрытия)
+    readonly property real radiusM: 10    // стандартный radius интерактивных поверхностей
+
+    // ── Размеры иконок (icon scale) ──────────────────────────────────────────
+    readonly property real iconXS: 8      // микро-иконки (крестик закрытия)
+    readonly property real iconS: 14      // компактные иконки в составе строки
+    readonly property real iconL: 18      // самостоятельные крупные иконки-тайлы
+
+    // ── Размеры текста (text scale) ───────────────────────────────────────────
+    readonly property real textCaption: 9
+    readonly property real textBody: 10
+    readonly property real textLabel: 11
+    readonly property real textTitle: 12
+    readonly property real textHeading: 13
+
     readonly property int sideBarWidth: 40
     readonly property int widgetHeight: 24
     readonly property int containerPadding: 6
