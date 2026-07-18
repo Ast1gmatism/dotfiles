@@ -28,7 +28,7 @@ PanelWindow {
         name: "popupEscape"
         description: "Close popup"
         onPressed: {
-            if (root.visible) root._close()
+            if (root.visible) root.close()
         }
     }
 
@@ -97,10 +97,17 @@ PanelWindow {
         if (!root.visible) {
             _open(component, item, gapValue)
         } else if (currentComponent === component) {
-            _close()
+            close()
         } else {
             _switch(component, item, gapValue)
         }
+    }
+
+    function close() {
+        root.visible = false
+        root.currentComponent = null
+        root.anchorItem = null
+        stack.clear(StackView.Immediate)
     }
 
     function _open(component, item, gapValue) {
@@ -120,13 +127,6 @@ PanelWindow {
         root.currentComponent = component
 
         stack.replace(component)
-    }
-
-    function _close() {
-        root.visible = false
-        root.currentComponent = null
-        root.anchorItem = null
-        stack.clear(StackView.Immediate)
     }
 
     function getItemRect(item) {

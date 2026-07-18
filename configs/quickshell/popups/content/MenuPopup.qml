@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import qs.theme
 import qs.components
+import qs.singletons
 
 Item {
     id: root
@@ -66,18 +67,19 @@ Item {
     readonly property var secondaryPowerActions: root.powerActions.slice(1)
 
     readonly property var powerHandlers: ({
-        lock:      () => console.log("TODO: loginctl lock-session"),
-        suspend:   () => console.log("TODO: systemctl suspend"),
-        hibernate: () => console.log("TODO: systemctl hibernate"),
-        logout:    () => console.log("TODO: loginctl terminate-session"),
-        reboot:    () => console.log("TODO: systemctl reboot"),
-        poweroff:  () => console.log("TODO: systemctl poweroff")
+        lock:      () => Session.lock(),
+        suspend:   () => Session.suspend(),
+        hibernate: () => Session.hibernate(),
+        logout:    () => Session.logout(),
+        reboot:    () => Session.reboot(),
+        poweroff:  () => Session.poweroff()
     })
 
     function executePowerAction(actionId) {
         const handler = root.powerHandlers[actionId]
         if (handler) handler()
         else console.warn("Unknown power action:", actionId)
+        mainPopup.close()
     }
 
     property bool sessionMenuOpen: false

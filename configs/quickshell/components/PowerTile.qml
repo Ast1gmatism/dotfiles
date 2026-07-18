@@ -61,8 +61,6 @@ HoverSurface {
             // по результатам визуальной проверки резкий snap на фоне
             // короткой яркой вспышки воспринимается лучше, чем медленное угасание.
             tile.holdT = 0
-
-            tile.confirmed()
         }
     }
 
@@ -180,6 +178,8 @@ HoverSurface {
         to: 0
         duration: 450
         easing.type: Easing.OutExpo
+
+        onFinished: tile.confirmed()
     }
 
     RowLayout {
