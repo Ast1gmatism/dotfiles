@@ -24,30 +24,6 @@ Scope {
 
             readonly property string layerNamespace: "capture-test"
 
-
-            function buildCommand(geom) {
-                var timestamp = new Date().toISOString()
-                    .replace("T", "_")
-                    .replace(/:/g, "-")
-                    .slice(0, 19)
-
-                var dir = "$HOME/Pictures/Screenshots"
-                var filepath = dir + "/" + timestamp + ".png"
-                
-                // 1. Создаём папку
-                var mkdir = "mkdir -p \"" + dir + "\" && "
-                // 2. Ждём 250мс, пока Hyprland полностью скроет оверлей (фейд-аут)
-                var delay = "sleep 0.25 && "
-
-                if (notch.destination === "clipboard")
-                    return delay + mkdir + "grim " + geom + " - | wl-copy"
-
-                if (notch.destination === "file")
-                    return delay + mkdir + "grim " + geom + " \"" + filepath + "\""
-
-                return delay + mkdir + "grim " + geom + " - | tee \"" + filepath + "\" | wl-copy"
-            }
-
             function captureRegion(x, y, w, h) {
                 if (w < 1 || h < 1) {
                     console.warn("Invalid selection: width/height < 1")

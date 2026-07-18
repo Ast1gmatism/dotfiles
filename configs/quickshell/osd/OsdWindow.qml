@@ -46,8 +46,10 @@ PanelWindow {
             implicitHeight: loader.implicitHeight + 16
             x: targetX
 
-            color: Theme.sectionColor
-            radius: 12
+            color: Theme.glassGroup
+            radius: 10
+            border.color: Theme.glassBorder
+            border.width: 1
             
             Loader {
                 id: loader

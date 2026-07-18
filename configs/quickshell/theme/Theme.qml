@@ -49,6 +49,7 @@ Singleton {
     readonly property real iconXS: 8      // микро-иконки (крестик закрытия)
     readonly property real iconS: 14      // компактные иконки в составе строки
     readonly property real iconL: 18      // самостоятельные крупные иконки-тайлы
+    readonly property real iconXL: 20     // главные кнопки компактных тулбаров (capture/close)
 
     // ── Размеры текста (text scale) ───────────────────────────────────────────
     readonly property real textCaption: 9

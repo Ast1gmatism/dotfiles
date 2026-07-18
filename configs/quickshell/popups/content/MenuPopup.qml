@@ -278,8 +278,7 @@ Item {
                             active: root.sessionMenuOpen
                             normalColor: "transparent"
                             hoverColor: Theme.hoverFillColor
-                            activeColor: Qt.rgba(Theme.foregroundColor.r, Theme.foregroundColor.g, Theme.foregroundColor.b, 0.07)
-                            activeBorderColor: Qt.rgba(Theme.foregroundColor.r, Theme.foregroundColor.g, Theme.foregroundColor.b, 0.12)
+                            activeColor: Theme.hoverFillColor
 
                             onClicked: root.sessionMenuOpen = !root.sessionMenuOpen
 
@@ -327,6 +326,7 @@ Item {
                             id: powerList
                             width: parent.width
                             spacing: sessionColumn.groupSpacing
+                            enabled: root.sessionMenuOpen
 
                             Repeater {
                                 model: root.secondaryPowerActions
@@ -507,6 +507,7 @@ Item {
                                     }
 
                                     HoverSurface {
+                                        enabled: notifTile.hovered
                                         anchors.right: parent.right
                                         anchors.verticalCenter: parent.verticalCenter
                                         width: metaSlot.closeButtonSize

@@ -17,9 +17,9 @@ Item {
 
     // ── Константы ────────────────────────────────────────────────────────────
     readonly property var profiles: [
-        { id: "saver",    icon: "󰾆" },
-        { id: "balanced", icon: "󰾅" },
-        { id: "perf",     icon: "󰓅" }
+        { value: "saver",    label: "󰾆" },
+        { value: "balanced", label: "󰾅" },
+        { value: "perf",     label: "󰓅" }
     ]
 
     readonly property real gaugeSize: 145
@@ -65,66 +65,12 @@ Item {
                 }
 
                 // ── Кнопки профилей ──────────────────────────────────────────
-                Rectangle {
-                    id: profileSwitch
+                PillSwitch {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: root.buttonHeight
-                    radius: Theme.radiusM
-                    border.width: 1
-                    border.color: Theme.glassBorder
-
-                    color: Theme.glassSelect
-
-                    readonly property int currentIndex: {
-                        const idx = root.profiles.findIndex(p => p.id === root.activeProfile)
-                        return idx >= 0 ? idx : 0
-                    }
-
-                    Rectangle {
-                        width: parent.width / root.profiles.length
-                        height: parent.height - parent.border.width * 2
-                        y: parent.border.width
-                        radius: profileSwitch.radius
-                        x: width * profileSwitch.currentIndex
-                        color: Theme.accentColor
-
-                        Behavior on x {
-                            NumberAnimation { duration: 180; easing.type: Easing.OutCubic }
-                        }
-                    }
-
-                    Row {
-                        anchors.fill: parent
-
-                        Repeater {
-                            model: root.profiles
-
-                            delegate: HoverSurface {
-                                id: profileSegment
-                                required property var modelData
-                                width: profileSwitch.width / root.profiles.length
-                                height: profileSwitch.height
-
-                                readonly property bool isActive: root.activeProfile === modelData.id
-
-                                normalColor: "transparent"
-                                hoverColor: "transparent"
-                                activeColor: "transparent"
-
-                                onClicked: Power.setProfile(modelData.id)
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: modelData.icon
-                                    font.family: Theme.fontFamily
-                                    font.pixelSize: Theme.iconL
-                                    color: profileSegment.isActive
-                                        ? Theme.onAccentColor
-                                        : (profileSegment.hovered ? Theme.accentColor : Theme.foregroundColor)
-                                }
-                            }
-                        }
-                    }
+                    implicitHeight: root.buttonHeight
+                    options: root.profiles
+                    current: root.activeProfile
+                    onChanged: (v) => Power.setProfile(v)
                 }
             }
         }
