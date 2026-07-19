@@ -18,7 +18,7 @@ Singleton {
     }
 
     function logout() {
-        Quickshell.execDetached(["hyprctl", "dispatch", "exit"])
+        Quickshell.execDetached(["hyprctl", "dispatch", "hl.dsp.exit()"])
     }
 
     function reboot() {
