@@ -37,9 +37,9 @@ Column {
             MouseArea {
                 anchors.fill: parent
                 hoverEnabled: true
-                onEntered: root.hoveredId = parent.workspaceId
+                onEntered: root.hoveredId = workspaceId
                 onExited: root.hoveredId = -1
-                onClicked: Hyprland.dispatch(`hl.dsp.focus({workspace = '${parent.workspaceId}'})`)
+                onClicked: Hyprland.dispatch(`hl.dsp.focus({workspace = '${workspaceId}'})`)
             }
 
             Behavior on height  { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }

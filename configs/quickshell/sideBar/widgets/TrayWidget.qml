@@ -17,6 +17,7 @@ Column {
             id: trayItem
 
             required property var modelData
+            Component.onDestruction: mainPopup.close()
 
             width: root.width
             height: 24
