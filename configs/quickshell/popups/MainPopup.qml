@@ -24,14 +24,6 @@ PanelWindow {
 
     readonly property int fadeDuration: 100
 
-    GlobalShortcut {
-        name: "popupEscape"
-        description: "Close popup"
-        onPressed: {
-            if (root.visible) root.close()
-        }
-    }
-
     Rectangle {
         id: background
         color: Theme.glassContainer
