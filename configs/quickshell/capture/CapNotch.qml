@@ -69,7 +69,7 @@ Item {
         property string icon: ""
         property bool show: true
 
-        width: show ? Theme.iconXL * 2 : 0
+        width: Theme.iconXL * 2
         implicitHeight: 32
         radius: Theme.radiusM
 
@@ -79,9 +79,6 @@ Item {
         opacity: show ? 1.0 : 0.0
         clip: true
 
-        Behavior on width {
-            NumberAnimation { duration: 250; easing.type: Easing.OutExpo }
-        }
         Behavior on opacity {
             NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
         }
@@ -111,21 +108,42 @@ Item {
             onClicked: notch.captureFullscreenRequested()
         }
 
-        PillSwitch {
-            width: 140
-            options: [
-                { value: "clipboard", label: "\uf0c5" },
-                { value: "file",      label: "\uf0c7" },
-                { value: "both",      label: "\uf0c5/\uf0c7" }
-            ]
-            current: notch.destination
-            onChanged: (v) => notch.destination = v
-        }
+        Row {
+            spacing: 0
 
-        IconButton {
-            show: notch.destination === "file" || notch.destination === "both"
-            icon: "\uf07b"
-            // TODO: открыть выбор директории через FileDialog / kdialog, когда решим backend
+            PillSwitch {
+                width: 140
+                options: [
+                    { value: "clipboard", label: "\uf0c5" },
+                    { value: "file",      label: "\uf0c7" },
+                    { value: "both",      label: "\uf0c5/\uf0c7" }
+                ]
+                current: notch.destination
+                onChanged: (v) => notch.destination = v
+            }
+
+            Item {
+                id: dirSlot
+                readonly property bool open: notch.destination === "file"
+                                           || notch.destination === "both"
+
+                width: open ? Theme.iconXL * 2 + Theme.spacingS : 0
+                height: 32
+
+                Behavior on width {
+                    NumberAnimation { duration: 250; easing.type: Easing.OutExpo }
+                }
+
+                IconButton {
+                    anchors.left: parent.left
+                    anchors.leftMargin: Theme.spacingS
+                    anchors.verticalCenter: parent.verticalCenter
+                    show: dirSlot.open
+                    interactive: dirSlot.open
+                    icon: "\uf07b"
+                    // TODO: открыть выбор директории через FileDialog / kdialog, когда решим backend
+                }
+            }
         }
 
         PillSwitch {
