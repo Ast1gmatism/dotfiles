@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Controls
 import QtCore
 import Quickshell.Wayland
+import QtQuick.Shapes
 
 Scope {
     id: root
@@ -107,58 +108,52 @@ Scope {
 
                 readonly property int minDragThreshold: 8
 
-                Rectangle {
+                // Вырез. Пока его нет, все четыре нули: вырожденный контур
+                // в точке ничего не вырезает, и затемнение остаётся сплошным.
+                readonly property real holeX: hasSelection ? selX : 0
+                readonly property real holeY: hasSelection ? selY : 0
+                readonly property real holeW: hasSelection ? selW : 0
+                readonly property real holeH: hasSelection ? selH : 0
+
+                // Контур выреза — ОДНО описание для заливки и для рамки.
+                // Оба ShapePath ниже читают эти две строки, поэтому дырка и
+                // белая линия вокруг неё не могут разойтись: поменяешь форму
+                // здесь — поменяется сразу везде.
+                readonly property string holePath: {
+                    var x = holeX, y = holeY, w = holeW, h = holeH
+                    return "M" + x + " " + y +
+                           " L" + (x + w) + " " + y +
+                           " L" + (x + w) + " " + (y + h) +
+                           " L" + x + " " + (y + h) + " Z"
+                }
+
+                // Внешний контур + вырез в одной строке: правило чётности
+                // превращает второй контур в дырку.
+                readonly property string shadePath:
+                    "M0 0 L" + width + " 0 L" + width + " " + height +
+                    " L0 " + height + " Z " + holePath
+
+                Shape {
+                    id: shade
                     anchors.fill: parent
-                    color: "black"
-                    opacity: 0.4
-                    visible: !overlayRoot.hasSelection
-                }
 
-                Rectangle {
-                    color: "black"
-                    opacity: 0.4
-                    x: 0; y: 0
-                    width: parent.width
-                    height: overlayRoot.selY
-                    visible: overlayRoot.hasSelection
-                }
-                Rectangle {
-                    color: "black"
-                    opacity: 0.4
-                    x: 0
-                    y: overlayRoot.selY + overlayRoot.selH
-                    width: parent.width
-                    height: parent.height - y
-                    visible: overlayRoot.hasSelection
-                }
-                Rectangle {
-                    color: "black"
-                    opacity: 0.4
-                    x: 0
-                    y: overlayRoot.selY
-                    width: overlayRoot.selX
-                    height: overlayRoot.selH
-                    visible: overlayRoot.hasSelection
-                }
-                Rectangle {
-                    color: "black"
-                    opacity: 0.4
-                    x: overlayRoot.selX + overlayRoot.selW
-                    y: overlayRoot.selY
-                    width: parent.width - x
-                    height: overlayRoot.selH
-                    visible: overlayRoot.hasSelection
-                }
+                    // 1. затемнение с дыркой
+                    ShapePath {
+                        fillColor: Qt.rgba(0, 0, 0, 0.4)
+                        fillRule: ShapePath.OddEvenFill
+                        strokeWidth: 0
+                        PathSvg { path: overlayRoot.shadePath }
+                    }
 
-                Rectangle {
-                    x: overlayRoot.selX
-                    y: overlayRoot.selY
-                    width: overlayRoot.selW
-                    height: overlayRoot.selH
-                    color: "transparent"
-                    border.width: 1
-                    border.color: "white"
-                    visible: overlayRoot.hasSelection
+                    // 2. рамка по тому же контуру, что и дырка.
+                    //    При отсутствии выделения контур вырожден в точку —
+                    //    толщину обнуляем, иначе в углу экрана была бы точка.
+                    ShapePath {
+                        fillColor: "transparent"
+                        strokeColor: "white"
+                        strokeWidth: overlayRoot.hasSelection ? 1 : 0
+                        PathSvg { path: overlayRoot.holePath }
+                    }
                 }
 
                 MouseArea {
@@ -186,7 +181,7 @@ Scope {
                         // Ограничиваем текущую позицию
                         overlayRoot.curX = clamp(mouse.x, 0, overlayRoot.width)
                         overlayRoot.curY = clamp(mouse.y, 0, overlayRoot.height)
-                        
+
                         if (overlayRoot.selW > overlayRoot.minDragThreshold ||
                             overlayRoot.selH > overlayRoot.minDragThreshold) {
                             overlayRoot.hasSelection = true
