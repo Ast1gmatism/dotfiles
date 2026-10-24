@@ -11,12 +11,13 @@ Scope {
     property bool active: false
 
     property bool fading: false
-    property string shotRegion: ""
-    property string shotDest: "both"
+    property string pendingRegion: ""
+    property string pendingDest: "both"
 
     function shoot(region, dest) {
-        root.shotRegion = region
-        root.shotDest = dest
+        if (root.fading || shotProcess.running) return   // снимок уже идёт
+        root.pendingRegion = region
+        root.pendingDest = dest
         root.fading = true
     }
 
@@ -25,7 +26,7 @@ Scope {
         root.fading = false
 
         var scriptPath = Qt.resolvedUrl("capture.sh").toString().replace("file://", "")
-        shotProcess.command = [scriptPath, root.shotRegion, root.shotDest]
+        shotProcess.command = [scriptPath, root.pendingRegion, root.pendingDest]
         shotProcess.running = true
     }
 
@@ -52,10 +53,6 @@ Scope {
         component: PanelWindow {
             id: win
 
-            readonly property string layerNamespace: "capture-test"
-
-            // 1 — оверлей виден, 0 — погас. Живёт внутри окна: при каждом
-            // открытии создаётся заново со значением 1, сбрасывать нечего.
             property real contentOpacity: 1
 
             function captureRegion(x, y, w, h) {
@@ -71,6 +68,8 @@ Scope {
             function captureFullscreen() {
                 root.shoot("", notch.destination)
             }
+
+            readonly property string layerNamespace: "capture-overlay"
 
             color: "transparent"
             anchors { top: true; left: true; right: true; bottom: true }
@@ -226,7 +225,7 @@ Scope {
                 to: 0
                 duration: 150
                 easing.type: Easing.OutCubic
-                onFinished: root.closeAndCapture
+                onFinished: Qt.callLater(root.closeAndCapture)
             }
 
             Connections {

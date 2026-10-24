@@ -28,7 +28,7 @@ hl.layer_rule({
 })
 
 hl.layer_rule({
-    match = { namespace = "capture-test" },
+    match = { namespace = "capture-overlay" },
     blur = true,
     ignore_alpha = 0.4
 })
