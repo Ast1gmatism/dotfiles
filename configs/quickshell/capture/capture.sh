@@ -6,19 +6,16 @@ set -euo pipefail
 SCREENSHOT_DIR="${SCREENSHOT_DIR:-$HOME/Pictures/Screenshots}" # TODO: задавать конечную папку через ui захвата
 GEOM_RAW="$1"
 DEST="${2:-both}"
-NAMESPACE="${3:-capture-test}"
 
 # Подготовка
 mkdir -p "$SCREENSHOT_DIR"
 timestamp=$(date +'%Y-%m-%d_%H-%M-%S')
 filepath="$SCREENSHOT_DIR/$timestamp.png"
 
-# Ждём, пока layer-surface с нужным namespace реально исчезнет
-timeout=30
-while [ "$(hyprctl layers -j | jq --arg ns "$NAMESPACE" '[.. | objects | select(.namespace? == $ns)] | length')" -gt 0 ] && [ $timeout -gt 0 ]; do
-    sleep 0.05
-    timeout=$((timeout - 1))
-done
+# Никаких ожиданий: к моменту вызова оверлей уже прозрачен, а окно ещё
+# замаплено — композитор не анимирует закрытие слоя, и в кадр оно не попадает.
+# (Раньше здесь был опрос `hyprctl layers`, но слой исчезает из списка в момент
+# unmap — то есть ровно тогда, когда анимация закрытия только начинается.)
 
 # Захват
 grim_cmd=(grim)

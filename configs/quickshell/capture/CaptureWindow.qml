@@ -10,9 +10,39 @@ Scope {
     id: root
     property bool active: false
 
+    property bool fading: false
+    property string shotRegion: ""
+    property string shotDest: "both"
+
+    function shoot(region, dest) {
+        root.shotRegion = region
+        root.shotDest = dest
+        root.fading = true
+    }
+
+    function closeAndCapture() {
+        root.active = false
+        root.fading = false
+
+        var scriptPath = Qt.resolvedUrl("capture.sh").toString().replace("file://", "")
+        shotProcess.command = [scriptPath, root.shotRegion, root.shotDest]
+        shotProcess.running = true
+    }
+
+    Process {
+        id: shotProcess
+        stderr: StdioCollector {
+            onStreamFinished: if (text.trim().length) console.warn("Capture:", text.trim())
+        }
+        onExited: (code) => {
+            if (code !== 0) console.warn("Capture: capture.sh вышел с кодом", code)
+        }
+    }
+
     IpcHandler {
         target: "screen"
         function capture() {
+            if (root.fading) return
             root.active = !root.active
         }
     }
@@ -24,6 +54,10 @@ Scope {
 
             readonly property string layerNamespace: "capture-test"
 
+            // 1 — оверлей виден, 0 — погас. Живёт внутри окна: при каждом
+            // открытии создаётся заново со значением 1, сбрасывать нечего.
+            property real contentOpacity: 1
+
             function captureRegion(x, y, w, h) {
                 if (w < 1 || h < 1) {
                     console.warn("Invalid selection: width/height < 1")
@@ -31,16 +65,11 @@ Scope {
                 }
                 var geomRaw = Math.round(x) + "," + Math.round(y) + " " +
                               Math.round(w) + "x" + Math.round(h)
-                var scriptPath = Qt.resolvedUrl("capture.sh").toString().replace("file://", "")
-
-                Quickshell.execDetached([scriptPath, geomRaw, notch.destination, win.layerNamespace])
-                root.active = false
+                root.shoot(geomRaw, notch.destination)
             }
 
             function captureFullscreen() {
-                var scriptPath = Qt.resolvedUrl("capture.sh").toString().replace("file://", "")
-                Quickshell.execDetached([scriptPath, "", notch.destination, win.layerNamespace])
-                root.active = false
+                root.shoot("", notch.destination)
             }
 
             color: "transparent"
@@ -57,12 +86,13 @@ Scope {
                 id: keyHandler
                 anchors.fill: parent
                 focus: true
-                Keys.onEscapePressed: root.active = false
+                Keys.onEscapePressed: if (!root.fading) root.active = false
             }
 
             Item {
                 id: overlayRoot
                 anchors.fill: parent
+                opacity: win.contentOpacity
 
                 property real startX: 0
                 property real startY: 0
@@ -181,11 +211,32 @@ Scope {
             CapNotch {
                 id: notch
                 anchors.horizontalCenter: parent.horizontalCenter
+                opacity: win.contentOpacity
 
                 collapsed: overlayRoot.selecting
 
                 onCloseRequested: root.active = false
                 onCaptureFullscreenRequested: win.captureFullscreen()
+            }
+
+            NumberAnimation {
+                id: fadeOut
+                target: win
+                property: "contentOpacity"
+                to: 0
+                duration: 150
+                easing.type: Easing.OutCubic
+                onFinished: root.closeAndCapture
+            }
+
+            Connections {
+                target: root
+                function onFadingChanged() {
+                    if (root.fading) {
+                        grab.active = false
+                        fadeOut.start()
+                    }
+                }
             }
 
             HyprlandFocusGrab {
@@ -203,7 +254,7 @@ Scope {
             Connections {
                 target: grab
                 function onActiveChanged() {
-                    if (!grab.active) root.active = false
+                    if (!grab.active && !root.fading) root.active = false
                 }
             }
         }
