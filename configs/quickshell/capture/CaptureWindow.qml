@@ -6,6 +6,8 @@ import QtQuick.Controls
 import QtCore
 import Quickshell.Wayland
 import QtQuick.Shapes
+import qs.singletons
+import qs.components
 
 Scope {
     id: root
@@ -27,7 +29,8 @@ Scope {
         root.fading = false
 
         var scriptPath = Qt.resolvedUrl("capture.sh").toString().replace("file://", "")
-        shotProcess.command = [scriptPath, root.pendingRegion, root.pendingDest]
+        shotProcess.command = [scriptPath, root.pendingRegion,
+                               root.pendingDest, Prefs.captureDir]
         shotProcess.running = true
     }
 
@@ -37,7 +40,15 @@ Scope {
             onStreamFinished: if (text.trim().length) console.warn("Capture:", text.trim())
         }
         onExited: (code) => {
-            if (code !== 0) console.warn("Capture: capture.sh вышел с кодом", code)
+            // 3 — снимок сделан, но выбранной папки нет: capture.sh сохранил
+            // в умолчание и сказал об этом. Забываем путь, чтобы не повторять
+            // уведомление при каждом снимке.
+            if (code === 3) {
+                console.warn("Capture: папка недоступна, вернулся к умолчанию")
+                Prefs.captureDir = ""
+            } else if (code !== 0) {
+                console.warn("Capture: capture.sh вышел с кодом", code)
+            }
         }
     }
 
@@ -86,7 +97,8 @@ Scope {
                 id: keyHandler
                 anchors.fill: parent
                 focus: true
-                Keys.onEscapePressed: if (!root.fading) root.active = false
+                Keys.onEscapePressed: if (!root.fading && !folderPicker.visible)
+                                            root.active = false
             }
 
             Item {
@@ -160,6 +172,7 @@ Scope {
                     anchors.fill: parent
                     preventStealing: true
                     cursorShape: Qt.CrossCursor
+                    enabled: !folderPicker.visible      // пока открыт выбор папки, не выделяем
 
                     // Функция для жёсткого ограничения координат границами экрана
                     function clamp(val, min, max) {
@@ -207,10 +220,28 @@ Scope {
                 anchors.horizontalCenter: parent.horizontalCenter
                 opacity: win.contentOpacity
 
+                destination: Prefs.captureMode
+                onDestinationChanged: Prefs.captureMode = notch.destination
+
                 collapsed: overlayRoot.selecting
 
                 onCloseRequested: root.active = false
                 onCaptureFullscreenRequested: win.captureFullscreen()
+                onPickFolderRequested: folderPicker.open()
+
+                visible: !folderPicker.visible
+            }
+
+            FolderPicker {
+                id: folderPicker
+                title: "Куда сохранять снимки"
+                startDir: Prefs.captureDir !== "" ? Prefs.captureDir : ""
+
+                onAccepted: (dir) => {
+                    Prefs.captureDir = dir
+                    keyHandler.forceActiveFocus()
+                }
+                onCancelled: keyHandler.forceActiveFocus()
             }
 
             NumberAnimation {

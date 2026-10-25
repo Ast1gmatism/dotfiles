@@ -12,6 +12,7 @@ Item {
 
     signal closeRequested()
     signal captureFullscreenRequested()
+    signal pickFolderRequested()
 
     readonly property int pad: Theme.containerPadding
     readonly property int r: (content.height + pad * 2) / 2
@@ -141,7 +142,7 @@ Item {
                     show: dirSlot.open
                     interactive: dirSlot.open
                     icon: "\uf07b"
-                    // TODO: открыть выбор директории через FileDialog / kdialog, когда решим backend
+                    onClicked: notch.pickFolderRequested()
                 }
             }
         }

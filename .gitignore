@@ -6,3 +6,5 @@ configs/hypr/hyprpaper.conf
 .luarc.json
 
 preview
+
+configs/quickshell/settings.json
