@@ -23,13 +23,6 @@ PanelWindow {
         anchors.fill: parent
     }
 
-    // Конфигурация всех типов OSD в одном месте
-    readonly property var osdConfigs: ({
-        "brightness": { singleton: Power, property: "brightness", contentFile: "content/BrightnessOSD.qml" },
-        "volume": { singleton: Volume, property: "volume", contentFile: "content/TestOSD.qml" }
-        // FIXME: заменить на нормальный VolumeOSD
-    })
-    
     property var activeOsds: []
     
     Component {
@@ -114,21 +107,45 @@ PanelWindow {
             activeOsds[idx].obj.osdValue = value
         } else {
             var obj = createOsd(type, value)
+            if (!obj) return
+
             activeOsds.push({ type: type, obj: obj })
             recalculatePositions()
         }
     }
 
     function createOsd(type, value) {
-        var content = Qt.createComponent(osdConfigs[type].contentFile)
-        
+        var content
+
+        switch (type) {
+        case "brightness":
+            content = Qt.createComponent("content/BrightnessOSD.qml")
+            break
+
+        case "volume":
+            content = Qt.createComponent("content/TestOSD.qml")
+            break
+
+        default:
+            console.warn("Unknown OSD type:", type)
+            return null
+        }
+
+        if (content.status === Component.Error) {
+            console.warn("Failed to load OSD component:", content.errorString())
+            return null
+        }
+
         var obj = osdTemp.createObject(container, {
             contentComponent: content,
             osdValue: value,
             osdType: type,
             y: root.screen.height
         })
-        
+
+        if (!obj)
+            console.warn("Failed to create OSD:", type)
+
         return obj
     }
 
@@ -156,22 +173,19 @@ PanelWindow {
         return -1
     }
 
-    Instantiator {
-        model: Object.keys(osdConfigs)
-        
-        delegate: Connections {
-            property string type: modelData
-            property var config: osdConfigs[type]
-            
-            target: config.singleton
-            ignoreUnknownSignals: true
-            
-            Component.onCompleted: {
-                var signalName = config.property + "Changed"
-                target[signalName].connect(function() {
-                    handleOsdUpdate(type, target[config.property])
-                })
-            }
+    Connections {
+        target: Power
+
+        function onBrightnessChanged() {
+            root.handleOsdUpdate("brightness", Power.brightness)
+        }
+    }
+
+    Connections {
+        target: Volume
+
+        function onVolumeChanged() {
+            root.handleOsdUpdate("volume", Volume.volume)
         }
     }
 }
