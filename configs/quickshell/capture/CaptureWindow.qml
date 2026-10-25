@@ -15,7 +15,7 @@ Scope {
 
     property bool fading: false
     property string pendingRegion: ""
-    property string pendingDest: "both"
+    property string pendingDest: "clipboard"
 
     function shoot(region, dest) {
         if (root.fading || shotProcess.running) return   // снимок уже идёт

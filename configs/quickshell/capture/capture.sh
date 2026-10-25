@@ -17,7 +17,7 @@
 set -euo pipefail
 
 REGION="${1:-}"
-MODE="${2:-both}"
+MODE="${2:-clipboard}"
 WANTED_DIR="${3:-}"
 
 notify() { notify-send -a Screenshot "$@" 2>/dev/null || true; }
