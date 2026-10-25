@@ -30,6 +30,7 @@ HoverSurface {
 
     readonly property real baseDuration: 420
     property real holdT: 0
+    property bool confirmationPending: false
 
     property int fillEasingType: Easing.OutCubic
 
@@ -50,6 +51,8 @@ HoverSurface {
         easing.type: tile.fillEasingType
 
         onFinished: {
+            tile.confirmationPending = true
+
             // Сначала — визуальный отклик, потом сам вызов действия.
             // confirmed() обязан оставаться неблокирующим
             // (Quickshell.execDetached, а не синхронный вызов) — иначе
@@ -57,9 +60,6 @@ HoverSurface {
             flashRect.opacity = 0.4
             flashAnim.start()
 
-            // Плавный "дренаж" заливки был заменён на мгновенный сброс:
-            // по результатам визуальной проверки резкий snap на фоне
-            // короткой яркой вспышки воспринимается лучше, чем медленное угасание.
             tile.holdT = 0
         }
     }
@@ -179,7 +179,10 @@ HoverSurface {
         duration: 450
         easing.type: Easing.OutExpo
 
-        onFinished: tile.confirmed()
+        onFinished: {
+            tile.confirmationPending = false
+            tile.confirmed()
+        }
     }
 
     RowLayout {
@@ -225,6 +228,8 @@ HoverSurface {
         cursorShape: Qt.PointingHandCursor
 
         onPressed: {
+            if (tile.confirmationPending)
+                return
             tile.holdT = 0
             fillAnim.start()
         }
